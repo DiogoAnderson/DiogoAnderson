@@ -1,7 +1,7 @@
 - 👋 Hi, I’m @DiogoAnderson
 - 👀 I’m interested in learn 
 - 🌱 I’m currently learning marketing and financial educarion
-- 💞️ I’m looking to collaborate on Word 
+- 💞️ I’m looking to collaborate on World 
 - 📫 How to reach me diogo.anderson@gmail.com 
 
 <!---
