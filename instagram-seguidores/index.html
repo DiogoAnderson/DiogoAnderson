@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seguidores Instagram</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root {
+    --bg: #f6f6f4; --surface: #ffffff; --text: #1d1d1b; --muted: #6b6b66;
+    --border: #e2e2dd; --accent: #c13584; --accent-soft: #fbe9f3;
+    --good: #1f7a4d; --bad: #b3261e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141413; --surface: #1e1e1c; --text: #ececea; --muted: #a3a39d;
+      --border: #33332f; --accent: #f06bb5; --accent-soft: #3a1f2f;
+      --good: #5fd39a; --bad: #ff8a80;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141413; --surface: #1e1e1c; --text: #ececea; --muted: #a3a39d;
+    --border: #33332f; --accent: #f06bb5; --accent-soft: #3a1f2f;
+    --good: #5fd39a; --bad: #ff8a80;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 880px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; }
+  h2 { font-size: 1.1rem; margin: 0 0 12px; }
+  p.lead { color: var(--muted); margin: 0 0 24px; }
+  section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; margin-bottom: 16px;
+  }
+  details summary { cursor: pointer; font-weight: 600; }
+  details ol { padding-left: 20px; margin: 12px 0 0; }
+  details li { margin-bottom: 6px; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+  label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--muted); }
+  input, select, button {
+    font: inherit; color: var(--text); background: var(--bg);
+    border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px;
+  }
+  button { cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .drop {
+    border: 2px dashed var(--border); border-radius: 10px; padding: 24px;
+    text-align: center; color: var(--muted); cursor: pointer; margin-bottom: 12px;
+  }
+  .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  .msg { margin-top: 10px; font-size: .9rem; }
+  .msg.err { color: var(--bad); }
+  .msg.ok { color: var(--good); }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .stat { border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+  .stat b { display: block; font-size: 1.5rem; }
+  .stat span { color: var(--muted); font-size: .85rem; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .tabs button.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  ul.list { list-style: none; margin: 0; padding: 0; max-height: 480px; overflow: auto; border-top: 1px solid var(--border); }
+  ul.list li { display: flex; justify-content: space-between; gap: 8px; padding: 8px 4px; border-bottom: 1px solid var(--border); }
+  ul.list a { color: var(--text); text-decoration: none; font-weight: 500; word-break: break-all; }
+  ul.list a:hover { color: var(--accent); }
+  ul.list small { color: var(--muted); white-space: nowrap; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; margin-bottom: 10px; }
+  .toolbar input { flex: 1; min-width: 160px; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; }
+  .muted { color: var(--muted); }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Seguidores do Instagram</h1>
+  <p class="lead">Descubra quem não te segue de volta e quem deixou de te seguir entre duas datas. Tudo roda no seu navegador: nenhum dado sai do seu computador e você não precisa informar sua senha.</p>
+
+  <section>
+    <details>
+      <summary>Como baixar seus dados do Instagram (passo a passo)</summary>
+      <ol>
+        <li>No Instagram, abra <b>Configurações → Central de Contas → Suas informações e permissões → Baixar suas informações</b>.</li>
+        <li>Escolha <b>Baixar ou transferir informações</b>, selecione sua conta e depois <b>Algumas das suas informações</b>.</li>
+        <li>Marque apenas <b>Seguidores e seguindo</b> (fica em "Conexões").</li>
+        <li>Escolha <b>Baixar no dispositivo</b>, período <b>Desde o início</b> e formato <b>JSON</b> (importante: não use HTML).</li>
+        <li>Quando o Instagram avisar que o arquivo está pronto (geralmente minutos), baixe o <b>.zip</b> e solte aqui embaixo.</li>
+      </ol>
+      <p class="muted">Para saber quem parou de te seguir, repita o download de tempos em tempos (por exemplo, toda semana). Cada importação vira uma "fotografia" salva neste navegador, e o app compara as fotografias.</p>
+    </details>
+  </section>
+
+  <section>
+    <h2>1. Importar uma fotografia</h2>
+    <div class="drop" id="drop">Arraste o .zip (ou os arquivos followers_1.json e following.json) aqui, ou clique para escolher</div>
+    <input type="file" id="file" accept=".zip,.json" multiple class="hidden">
+    <div class="row">
+      <label>Data da fotografia
+        <input type="date" id="snapDate">
+      </label>
+      <button class="primary" id="saveBtn" disabled>Salvar fotografia</button>
+    </div>
+    <div class="msg" id="importMsg"></div>
+  </section>
+
+  <section id="currentSec" class="hidden">
+    <h2>2. Situação atual <span class="muted" id="currentLabel"></span></h2>
+    <div class="stats" id="stats"></div>
+    <div class="tabs" id="tabs"></div>
+    <div class="toolbar">
+      <input type="search" id="search" placeholder="Filtrar por nome de usuário">
+      <button id="csvBtn">Baixar CSV</button>
+    </div>
+    <ul class="list" id="list"></ul>
+  </section>
+
+  <section id="compareSec" class="hidden">
+    <h2>3. Comparar períodos</h2>
+    <div class="row" style="margin-bottom:12px">
+      <label>De <select id="fromSel"></select></label>
+      <label>Até <select id="toSel"></select></label>
+    </div>
+    <div class="stats" id="cmpStats"></div>
+    <div class="tabs" id="cmpTabs"></div>
+    <ul class="list" id="cmpList"></ul>
+  </section>
+
+  <section id="historySec" class="hidden">
+    <h2>Fotografias salvas</h2>
+    <table>
+      <thead><tr><th>Data</th><th>Seguidores</th><th>Seguindo</th><th></th></tr></thead>
+      <tbody id="histBody"></tbody>
+    </table>
+    <div class="row" style="margin-top:12px">
+      <button id="exportBtn">Exportar backup</button>
+      <button id="importBackupBtn">Restaurar backup</button>
+      <input type="file" id="backupFile" accept=".json" class="hidden">
+    </div>
+  </section>
+</main>
+
+<script>
+const STORE_KEY = "ig-seguidores-snapshots-v1";
+let pending = null;            // fotografia lida, ainda não salva
+let snapshots = loadSnapshots();
+let currentTab = "naoSeguem";
+let cmpTab = "pararam";
+
+const $ = id => document.getElementById(id);
+$("snapDate").value = new Date().toISOString().slice(0, 10);
+
+// ---------- armazenamento ----------
+function loadSnapshots() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+  catch { return []; }
+}
+function persist() {
+  snapshots.sort((a, b) => a.date.localeCompare(b.date));
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(snapshots)); }
+  catch { msg("Não foi possível salvar no navegador (modo anônimo?). Use 'Exportar backup'.", "err"); }
+}
+
+// ---------- leitura do export do Instagram ----------
+function usernameFrom(entry) {
+  const sld = (entry.string_list_data || [])[0] || {};
+  let u = sld.value || entry.title || "";
+  if (!u && sld.href) u = sld.href.replace(/\/+$/, "").split("/").pop();
+  return { user: u.trim().toLowerCase(), ts: sld.timestamp || null };
+}
+function entriesOf(json) {
+  if (Array.isArray(json)) return json;
+  for (const k of Object.keys(json || {})) if (Array.isArray(json[k])) return json[k];
+  return [];
+}
+function classify(path, json) {
+  const name = path.toLowerCase().split("/").pop();
+  if (/^followers(_\d+)?\.json$/.test(name)) return "followers";
+  if (/^following\.json$/.test(name) || json?.relationships_following) return "following";
+  return null;
+}
+
+async function readFiles(fileList) {
+  const followers = new Map(), following = new Map();
+  let found = { followers: 0, following: 0 }, sawHtml = false;
+
+  const handle = (path, text) => {
+    let json;
+    try { json = JSON.parse(text); } catch { return; }
+    const kind = classify(path, json);
+    if (!kind) return;
+    found[kind]++;
+    const target = kind === "followers" ? followers : following;
+    for (const e of entriesOf(json)) {
+      const { user, ts } = usernameFrom(e);
+      if (user) target.set(user, ts);
+    }
+  };
+
+  for (const f of fileList) {
+    if (f.name.toLowerCase().endsWith(".zip")) {
+      const zip = await JSZip.loadAsync(f);
+      for (const [path, entry] of Object.entries(zip.files)) {
+        if (entry.dir) continue;
+        if (/followers_and_following\/.*\.html$/i.test(path)) sawHtml = true;
+        if (path.toLowerCase().endsWith(".json")) handle(path, await entry.async("string"));
+      }
+    } else {
+      handle(f.name, await f.text());
+    }
+  }
+
+  if (!found.followers || !found.following) {
+    throw new Error(sawHtml
+      ? "Esse arquivo foi baixado em formato HTML. Peça o download novamente escolhendo o formato JSON."
+      : "Não encontrei os arquivos de seguidores (followers_1.json) e seguindo (following.json). Confira se marcou 'Seguidores e seguindo' no download.");
+  }
+  return { followers: Object.fromEntries(followers), following: Object.fromEntries(following) };
+}
+
+// ---------- importação ----------
+function msg(text, cls = "") { const m = $("importMsg"); m.textContent = text; m.className = "msg " + cls; }
+
+async function onFiles(files) {
+  if (!files.length) return;
+  msg("Lendo arquivo...");
+  try {
+    pending = await readFiles([...files]);
+    const nf = Object.keys(pending.followers).length, ng = Object.keys(pending.following).length;
+    msg(`Encontrados ${nf} seguidores e ${ng} perfis que você segue. Confira a data e clique em "Salvar fotografia".`, "ok");
+    $("saveBtn").disabled = false;
+  } catch (e) {
+    pending = null; $("saveBtn").disabled = true;
+    msg(e.message || "Não consegui ler o arquivo.", "err");
+  }
+}
+
+$("saveBtn").onclick = () => {
+  if (!pending) return;
+  const date = $("snapDate").value || new Date().toISOString().slice(0, 10);
+  const existing = snapshots.findIndex(s => s.date === date);
+  if (existing >= 0 && !confirm(`Já existe uma fotografia de ${fmtDate(date)}. Substituir?`)) return;
+  if (existing >= 0) snapshots.splice(existing, 1);
+  snapshots.push({ date, ...pending });
+  persist();
+  pending = null; $("saveBtn").disabled = true;
+  msg(`Fotografia de ${fmtDate(date)} salva.`, "ok");
+  render();
+};
+
+const drop = $("drop");
+drop.onclick = () => $("file").click();
+$("file").onchange = e => { onFiles(e.target.files); e.target.value = ""; };
+drop.ondragover = e => { e.preventDefault(); drop.classList.add("over"); };
+drop.ondragleave = () => drop.classList.remove("over");
+drop.ondrop = e => { e.preventDefault(); drop.classList.remove("over"); onFiles(e.dataTransfer.files); };
+
+// ---------- análises ----------
+const minus = (a, b) => Object.keys(a).filter(u => !(u in b)).sort();
+function fmtDate(iso) { const [y, m, d] = iso.split("-"); return `${d}/${m}/${y}`; }
+function fmtTs(ts) { return ts ? new Date(ts * 1000).toLocaleDateString("pt-BR") : ""; }
+
+function currentLists(s) {
+  return {
+    naoSeguem:  { label: "Não me seguem de volta", users: minus(s.following, s.followers), ts: s.following, tsLabel: "você segue desde" },
+    euNaoSigo:  { label: "Eu não sigo de volta",   users: minus(s.followers, s.following), ts: s.followers, tsLabel: "te segue desde" },
+    seguidores: { label: "Seguidores",             users: Object.keys(s.followers).sort(), ts: s.followers, tsLabel: "desde" },
+    seguindo:   { label: "Seguindo",               users: Object.keys(s.following).sort(), ts: s.following, tsLabel: "desde" },
+  };
+}
+function compareLists(a, b) {
+  return {
+    pararam:    { label: "Pararam de me seguir", users: minus(a.followers, b.followers) },
+    novos:      { label: "Novos seguidores",     users: minus(b.followers, a.followers), ts: b.followers, tsLabel: "desde" },
+    deixeiSeg:  { label: "Deixei de seguir",     users: minus(a.following, b.following) },
+    comeceiSeg: { label: "Comecei a seguir",     users: minus(b.following, a.following), ts: b.following, tsLabel: "desde" },
+  };
+}
+
+// ---------- renderização ----------
+function renderTabs(el, lists, active, onPick) {
+  el.innerHTML = "";
+  for (const [key, l] of Object.entries(lists)) {
+    const b = document.createElement("button");
+    b.textContent = `${l.label} (${l.users.length})`;
+    if (key === active) b.className = "active";
+    b.onclick = () => onPick(key);
+    el.appendChild(b);
+  }
+}
+function renderList(el, l, filter = "") {
+  el.innerHTML = "";
+  const users = l.users.filter(u => u.includes(filter.trim().toLowerCase()));
+  if (!users.length) { el.innerHTML = '<li class="muted">Ninguém por aqui.</li>'; return; }
+  const frag = document.createDocumentFragment();
+  for (const u of users) {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = `https://www.instagram.com/${encodeURIComponent(u)}/`;
+    a.target = "_blank"; a.rel = "noopener"; a.textContent = "@" + u;
+    li.appendChild(a);
+    const ts = l.ts && fmtTs(l.ts[u]);
+    if (ts) { const s = document.createElement("small"); s.textContent = `${l.tsLabel} ${ts}`; li.appendChild(s); }
+    frag.appendChild(li);
+  }
+  el.appendChild(frag);
+}
+function stat(label, n) { return `<div class="stat"><b>${n}</b><span>${label}</span></div>`; }
+
+function render() {
+  const has = snapshots.length > 0;
+  for (const id of ["currentSec", "historySec"]) $(id).classList.toggle("hidden", !has);
+  $("compareSec").classList.toggle("hidden", snapshots.length < 2);
+  if (!has) return;
+
+  // Situação atual (fotografia mais recente)
+  const last = snapshots[snapshots.length - 1];
+  $("currentLabel").textContent = `(fotografia de ${fmtDate(last.date)})`;
+  const cur = currentLists(last);
+  $("stats").innerHTML =
+    stat("seguidores", cur.seguidores.users.length) +
+    stat("seguindo", cur.seguindo.users.length) +
+    stat("não me seguem de volta", cur.naoSeguem.users.length) +
+    stat("eu não sigo de volta", cur.euNaoSigo.users.length);
+  renderTabs($("tabs"), cur, currentTab, k => { currentTab = k; render(); });
+  renderList($("list"), cur[currentTab], $("search").value);
+
+  // Histórico
+  $("histBody").innerHTML = "";
+  snapshots.slice().reverse().forEach(s => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${fmtDate(s.date)}</td><td>${Object.keys(s.followers).length}</td><td>${Object.keys(s.following).length}</td>`;
+    const td = document.createElement("td"); const del = document.createElement("button");
+    del.textContent = "Excluir";
+    del.onclick = () => {
+      if (!confirm(`Excluir a fotografia de ${fmtDate(s.date)}?`)) return;
+      snapshots = snapshots.filter(x => x !== s); persist(); render();
+    };
+    td.appendChild(del); tr.appendChild(td); $("histBody").appendChild(tr);
+  });
+
+  // Comparação
+  if (snapshots.length < 2) return;
+  fillSelect($("fromSel"), snapshots.length - 2);
+  fillSelect($("toSel"), snapshots.length - 1);
+  renderCompare();
+}
+function fillSelect(sel, defIdx) {
+  const prev = sel.value;
+  sel.innerHTML = snapshots.map((s, i) => `<option value="${i}">${fmtDate(s.date)}</option>`).join("");
+  sel.value = prev !== "" && snapshots[prev] ? prev : String(defIdx);
+}
+function renderCompare() {
+  let a = +$("fromSel").value, b = +$("toSel").value;
+  if (a > b) [a, b] = [b, a];
+  const A = snapshots[a], B = snapshots[b];
+  const cmp = compareLists(A, B);
+  const df = Object.keys(B.followers).length - Object.keys(A.followers).length;
+  $("cmpStats").innerHTML =
+    stat("pararam de me seguir", cmp.pararam.users.length) +
+    stat("novos seguidores", cmp.novos.users.length) +
+    stat(`saldo de ${fmtDate(A.date)} a ${fmtDate(B.date)}`, (df > 0 ? "+" : "") + df);
+  renderTabs($("cmpTabs"), cmp, cmpTab, k => { cmpTab = k; renderCompare(); });
+  renderList($("cmpList"), cmp[cmpTab]);
+}
+$("fromSel").onchange = $("toSel").onchange = renderCompare;
+$("search").oninput = () => render();
+
+// ---------- exportações ----------
+function download(name, text, type) {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = document.createElement("a"); a.href = url; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+$("csvBtn").onclick = () => {
+  const last = snapshots[snapshots.length - 1];
+  const l = currentLists(last)[currentTab];
+  const rows = ["usuario,link"].concat(l.users.map(u => `${u},https://www.instagram.com/${u}/`));
+  download(`${currentTab}-${last.date}.csv`, rows.join("\n"), "text/csv");
+};
+$("exportBtn").onclick = () =>
+  download(`backup-seguidores-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(snapshots), "application/json");
+$("importBackupBtn").onclick = () => $("backupFile").click();
+$("backupFile").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (!Array.isArray(data) || !data.every(s => s.date && s.followers && s.following)) throw 0;
+    const byDate = Object.fromEntries(snapshots.map(s => [s.date, s]));
+    data.forEach(s => byDate[s.date] = s);
+    snapshots = Object.values(byDate); persist(); render();
+    msg(`Backup restaurado: ${data.length} fotografia(s).`, "ok");
+  } catch { msg("Arquivo de backup inválido.", "err"); }
+};
+
+render();
+</script>
+</body>
+</html>
