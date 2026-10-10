@@ -72,6 +72,14 @@
   table { width: 100%; border-collapse: collapse; font-size: .9rem; }
   th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--border); }
   th { color: var(--muted); font-weight: 500; }
+  textarea { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; resize: vertical; }
+  .card { border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-align: center; }
+  .card .who { font-size: 1.4rem; font-weight: 600; margin: 4px 0 2px; word-break: break-all; }
+  .card .actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px; }
+  .card a.primary { background: var(--accent); color: #fff; border-radius: 8px; padding: 8px 14px; text-decoration: none; font-weight: 600; }
+  .msg.warn { color: var(--bad); font-weight: 600; }
+  ul.list li .right { display: flex; align-items: center; gap: 8px; }
+  ul.list li button.mini { padding: 2px 8px; font-size: .8rem; }
   .muted { color: var(--muted); }
   .hidden { display: none; }
 </style>
@@ -119,8 +127,34 @@
     <ul class="list" id="list"></ul>
   </section>
 
+  <section id="queueSec" class="hidden">
+    <h2>3. Fila para deixar de seguir</h2>
+    <p class="muted" style="margin-top:0">Um perfil por vez. Abra o perfil, toque em "Seguindo → Deixar de seguir" no Instagram e volte aqui para marcar. Você faz cada ação; o app só organiza a fila.</p>
+    <div class="stats" id="queueStats"></div>
+    <div class="msg" id="limitMsg"></div>
+    <div id="queueCard" class="card"></div>
+    <div class="row" style="margin-top:12px">
+      <label>Limite diário
+        <input type="number" id="limitInput" min="1" max="500" style="width:100px">
+      </label>
+      <button id="undoBtn">Desfazer última marcação</button>
+    </div>
+  </section>
+
+  <section id="exceptSec" class="hidden">
+    <h2>Lista de exceções</h2>
+    <p class="muted" style="margin-top:0">Perfis que você quer continuar seguindo mesmo sem ser seguido de volta (marcas, referências, notícias). Eles nunca entram na fila.</p>
+    <div class="row" style="margin-bottom:12px">
+      <label style="flex:1">Adicionar (um ou vários, separados por vírgula, espaço ou linha)
+        <textarea id="exceptInput" rows="2" placeholder="@nasa, @folha, @sicoob"></textarea>
+      </label>
+      <button id="exceptAddBtn">Adicionar</button>
+    </div>
+    <ul class="list" id="exceptList"></ul>
+  </section>
+
   <section id="compareSec" class="hidden">
-    <h2>3. Comparar períodos</h2>
+    <h2>4. Comparar períodos</h2>
     <div class="row" style="margin-bottom:12px">
       <label>De <select id="fromSel"></select></label>
       <label>Até <select id="toSel"></select></label>
@@ -146,24 +180,34 @@
 
 <script>
 const STORE_KEY = "ig-seguidores-snapshots-v1";
+const STATE_KEY = "ig-seguidores-fila-v1";
 let pending = null;            // fotografia lida, ainda não salva
-let snapshots = loadSnapshots();
+let snapshots = load(STORE_KEY, []);
+// exceptions: usuários que nunca entram na fila
+// done: usuário -> data ISO em que você marcou "deixei de seguir"
+let state = Object.assign({ exceptions: [], done: {}, skipped: [], limit: 50, history: [] }, load(STATE_KEY, {}));
 let currentTab = "naoSeguem";
 let cmpTab = "pararam";
 
 const $ = id => document.getElementById(id);
-$("snapDate").value = new Date().toISOString().slice(0, 10);
+// data local (não UTC), para o "hoje" do limite diário virar à meia-noite do Brasil
+const today = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+$("snapDate").value = today();
 
 // ---------- armazenamento ----------
-function loadSnapshots() {
-  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
-  catch { return []; }
+function load(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key)) || fallback; }
+  catch { return fallback; }
 }
 function persist() {
   snapshots.sort((a, b) => a.date.localeCompare(b.date));
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(snapshots)); }
-  catch { msg("Não foi possível salvar no navegador (modo anônimo?). Use 'Exportar backup'.", "err"); }
+  state.history = state.history.slice(-50);
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(snapshots));
+    localStorage.setItem(STATE_KEY, JSON.stringify(state));
+  } catch { msg("Não foi possível salvar no navegador (modo anônimo?). Use 'Exportar backup'.", "err"); }
 }
+const cleanUser = u => u.trim().replace(/^@/, "").replace(/^https?:\/\/(www\.)?instagram\.com\//i, "").replace(/\/.*$/, "").toLowerCase();
 
 // ---------- leitura do export do Instagram ----------
 function usernameFrom(entry) {
@@ -241,11 +285,12 @@ async function onFiles(files) {
 
 $("saveBtn").onclick = () => {
   if (!pending) return;
-  const date = $("snapDate").value || new Date().toISOString().slice(0, 10);
+  const date = $("snapDate").value || today();
   const existing = snapshots.findIndex(s => s.date === date);
   if (existing >= 0 && !confirm(`Já existe uma fotografia de ${fmtDate(date)}. Substituir?`)) return;
   if (existing >= 0) snapshots.splice(existing, 1);
   snapshots.push({ date, ...pending });
+  state.skipped = [];
   persist();
   pending = null; $("saveBtn").disabled = true;
   msg(`Fotografia de ${fmtDate(date)} salva.`, "ok");
@@ -266,7 +311,7 @@ function fmtTs(ts) { return ts ? new Date(ts * 1000).toLocaleDateString("pt-BR")
 
 function currentLists(s) {
   return {
-    naoSeguem:  { label: "Não me seguem de volta", users: minus(s.following, s.followers), ts: s.following, tsLabel: "você segue desde" },
+    naoSeguem:  { label: "Não me seguem de volta", users: minus(s.following, s.followers), ts: s.following, tsLabel: "você segue desde", action: exceptionButton },
     euNaoSigo:  { label: "Eu não sigo de volta",   users: minus(s.followers, s.following), ts: s.followers, tsLabel: "te segue desde" },
     seguidores: { label: "Seguidores",             users: Object.keys(s.followers).sort(), ts: s.followers, tsLabel: "desde" },
     seguindo:   { label: "Seguindo",               users: Object.keys(s.following).sort(), ts: s.following, tsLabel: "desde" },
@@ -303,8 +348,11 @@ function renderList(el, l, filter = "") {
     a.href = `https://www.instagram.com/${encodeURIComponent(u)}/`;
     a.target = "_blank"; a.rel = "noopener"; a.textContent = "@" + u;
     li.appendChild(a);
+    const right = document.createElement("span"); right.className = "right";
     const ts = l.ts && fmtTs(l.ts[u]);
-    if (ts) { const s = document.createElement("small"); s.textContent = `${l.tsLabel} ${ts}`; li.appendChild(s); }
+    if (ts) { const s = document.createElement("small"); s.textContent = `${l.tsLabel} ${ts}`; right.appendChild(s); }
+    if (l.action) right.appendChild(l.action(u));
+    li.appendChild(right);
     frag.appendChild(li);
   }
   el.appendChild(frag);
@@ -313,7 +361,7 @@ function stat(label, n) { return `<div class="stat"><b>${n}</b><span>${label}</s
 
 function render() {
   const has = snapshots.length > 0;
-  for (const id of ["currentSec", "historySec"]) $(id).classList.toggle("hidden", !has);
+  for (const id of ["currentSec", "queueSec", "exceptSec", "historySec"]) $(id).classList.toggle("hidden", !has);
   $("compareSec").classList.toggle("hidden", snapshots.length < 2);
   if (!has) return;
 
@@ -328,6 +376,8 @@ function render() {
     stat("eu não sigo de volta", cur.euNaoSigo.users.length);
   renderTabs($("tabs"), cur, currentTab, k => { currentTab = k; render(); });
   renderList($("list"), cur[currentTab], $("search").value);
+  renderQueue(last, cur.naoSeguem.users);
+  renderExceptions();
 
   // Histórico
   $("histBody").innerHTML = "";
@@ -368,6 +418,112 @@ function renderCompare() {
   renderList($("cmpList"), cmp[cmpTab]);
 }
 $("fromSel").onchange = $("toSel").onchange = renderCompare;
+
+// ---------- exceções ----------
+const isException = u => state.exceptions.includes(u);
+function setException(u, on) {
+  state.exceptions = state.exceptions.filter(x => x !== u);
+  if (on) state.exceptions.push(u);
+  state.exceptions.sort();
+  persist(); render();
+}
+function exceptionButton(u) {
+  const b = document.createElement("button");
+  b.className = "mini";
+  b.textContent = isException(u) ? "✓ exceção" : "Manter";
+  b.title = isException(u) ? "Remover da lista de exceções" : "Nunca colocar na fila";
+  b.onclick = () => setException(u, !isException(u));
+  return b;
+}
+function renderExceptions() {
+  renderList($("exceptList"), {
+    users: state.exceptions,
+    action: u => { const b = document.createElement("button"); b.className = "mini"; b.textContent = "Remover"; b.onclick = () => setException(u, false); return b; },
+  });
+}
+$("exceptAddBtn").onclick = () => {
+  const users = $("exceptInput").value.split(/[\s,;]+/).map(cleanUser).filter(Boolean);
+  if (!users.length) return;
+  state.exceptions = [...new Set([...state.exceptions, ...users])].sort();
+  $("exceptInput").value = "";
+  persist(); render();
+};
+
+// ---------- fila para deixar de seguir ----------
+const doneToday = () => Object.values(state.done).filter(d => d === today()).length;
+
+function renderQueue(last, naoSeguem) {
+  // Se uma fotografia mais nova ainda mostra que você segue alguém marcado como "deixei de seguir",
+  // a ação não pegou no Instagram: volta para a fila.
+  for (const [u, d] of Object.entries(state.done)) {
+    if (d < last.date && u in last.following) delete state.done[u];
+  }
+  const pendingUsers = naoSeguem.filter(u => !isException(u) && !(u in state.done));
+  const fresh = pendingUsers.filter(u => !state.skipped.includes(u));
+  const queue = fresh.concat(state.skipped.filter(u => pendingUsers.includes(u)));
+  const count = doneToday(), limit = state.limit;
+
+  $("queueStats").innerHTML =
+    stat("na fila", queue.length) +
+    stat("feitos hoje", `${count}/${limit}`) +
+    stat("exceções", state.exceptions.length);
+  if (document.activeElement !== $("limitInput")) $("limitInput").value = limit;
+  $("undoBtn").disabled = !state.history.length;
+
+  const lm = $("limitMsg");
+  lm.textContent = count >= limit
+    ? "Você chegou ao limite de hoje. Continuar pode fazer o Instagram bloquear temporariamente suas ações. O ideal é parar e seguir amanhã."
+    : "";
+  lm.className = "msg warn";
+
+  const card = $("queueCard");
+  card.innerHTML = "";
+  if (!queue.length) {
+    card.innerHTML = '<p class="muted">Fila vazia. Quando baixar uma nova fotografia, quem ainda não te segue de volta aparece aqui.</p>';
+    return;
+  }
+  const u = queue[0];
+  const since = fmtTs(last.following[u]);
+  card.innerHTML = `<div class="muted">Próximo da fila</div><div class="who"></div><div class="muted">${since ? "você segue desde " + since : ""}</div>`;
+  card.querySelector(".who").textContent = "@" + u;
+
+  const actions = document.createElement("div"); actions.className = "actions";
+  const open = document.createElement("a");
+  open.className = "primary"; open.href = `https://www.instagram.com/${encodeURIComponent(u)}/`;
+  open.target = "_blank"; open.rel = "noopener"; open.textContent = "Abrir perfil ↗";
+  actions.appendChild(open);
+
+  const btn = (text, fn) => { const b = document.createElement("button"); b.textContent = text; b.onclick = fn; actions.appendChild(b); };
+  btn("Já deixei de seguir", () => {
+    if (doneToday() >= state.limit && !confirm("Você já passou do limite diário. Marcar mesmo assim?")) return;
+    state.done[u] = today();
+    state.skipped = state.skipped.filter(x => x !== u);
+    state.history.push({ type: "done", user: u });
+    persist(); render();
+  });
+  btn("Manter (exceção)", () => {
+    state.history.push({ type: "exception", user: u });
+    setException(u, true);
+  });
+  btn("Pular", () => {
+    state.skipped = state.skipped.filter(x => x !== u).concat(u);
+    persist(); render();
+  });
+  card.appendChild(actions);
+}
+// "input" em vez de "change": o change dispara no blur e redesenharia o cartão no meio de um clique
+$("limitInput").oninput = e => {
+  const n = parseInt(e.target.value, 10);
+  if (!(n >= 1 && n <= 500) || n === state.limit) return;
+  state.limit = n; persist(); render();
+};
+$("undoBtn").onclick = () => {
+  const h = state.history.pop();
+  if (!h) return;
+  if (h.type === "done") delete state.done[h.user];
+  if (h.type === "exception") state.exceptions = state.exceptions.filter(x => x !== h.user);
+  persist(); render();
+};
 $("search").oninput = () => render();
 
 // ---------- exportações ----------
@@ -383,14 +539,19 @@ $("csvBtn").onclick = () => {
   download(`${currentTab}-${last.date}.csv`, rows.join("\n"), "text/csv");
 };
 $("exportBtn").onclick = () =>
-  download(`backup-seguidores-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(snapshots), "application/json");
+  download(`backup-seguidores-${today()}.json`, JSON.stringify({ snapshots, state }), "application/json");
 $("importBackupBtn").onclick = () => $("backupFile").click();
 $("backupFile").onchange = async e => {
   const f = e.target.files[0]; e.target.value = "";
   if (!f) return;
   try {
-    const data = JSON.parse(await f.text());
+    const raw = JSON.parse(await f.text());
+    const data = Array.isArray(raw) ? raw : raw.snapshots;   // backups antigos eram só a lista
     if (!Array.isArray(data) || !data.every(s => s.date && s.followers && s.following)) throw 0;
+    if (raw.state) {
+      state.exceptions = [...new Set([...state.exceptions, ...(raw.state.exceptions || [])])].sort();
+      state.done = Object.assign({}, raw.state.done, state.done);
+    }
     const byDate = Object.fromEntries(snapshots.map(s => [s.date, s]));
     data.forEach(s => byDate[s.date] = s);
     snapshots = Object.values(byDate); persist(); render();
