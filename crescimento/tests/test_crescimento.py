@@ -34,12 +34,17 @@ def test_pilar_por_palavra_chave():
     assert post.pilar == "educação financeira"
 
 
-def test_grade_semana_tem_seis_dias_e_trial_reels():
+def test_grade_segue_a_grade_oficial():
     grade = calendario.grade_semana(date(2026, 10, 12))
-    dias = {p.data_hora[:10] for p in grade}
-    assert len(dias) == 6  # domingo fica de fora
-    assert any(p.instagram_tipo == "TRIAL_REEL" for p in grade)
-    assert not any(p.rede == "linkedin" and p.data_hora.startswith("2026-10-17") for p in grade)
+    reels = {p.data_hora: p.pilar for p in grade if p.instagram_tipo == "REEL"}
+    assert reels["2026-10-13T18:00:00"] == "Radar Cooperativo"
+    assert reels["2026-10-16T10:00:00"] == "Doutor Di"
+    trials = [p.data_hora for p in grade if p.instagram_tipo == "TRIAL_REEL"]
+    assert trials == ["2026-10-14T18:00:00", "2026-10-15T18:00:00"]
+    assert not any(p.data_hora >= "2026-10-17" for p in grade)  # fim de semana só Stories
+    assert not any(p.rede == "linkedin" and p.pilar == "Doutor Di" for p in grade)
+    horarios = [(p.rede, p.data_hora) for p in grade]
+    assert len(horarios) == len(set(horarios))  # nenhuma rede com dois posts no mesmo horário
 
 
 def test_grade_exige_segunda():

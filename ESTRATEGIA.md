@@ -1,6 +1,8 @@
 # Plano de crescimento orgânico — Diogo Angioleti
 
-Dados: Metricool, 10/07 a 09/10/2026 (Instagram @diogoanderson, TikTok @diogoangioletti, YouTube). LinkedIn ainda não está conectado ao Metricool.
+Dados: Metricool, 10/07 a 09/10/2026 (Instagram @diogoanderson, TikTok @diogoangioletti, YouTube). O LinkedIn fica fora do Metricool por decisão do Diogo.
+
+> Este plano virou o sistema **Master Growth Angioletti**: veja [`MASTER-GROWTH.md`](MASTER-GROWTH.md).
 Os números abaixo saem de `python -m crescimento.diagnostico`, que roda sobre os CSVs em `crescimento/dados/`.
 
 ## 1. O que os seus dados dizem
@@ -10,7 +12,7 @@ Os números abaixo saem de `python -m crescimento.diagnostico`, que roda sobre o
 | Instagram | 7.217 | estável/caindo (7.238 em 26/09) | 752 views por reel |
 | TikTok | 2.522 | parado (2.517 em 26/09) | 146 views orgânicas |
 | YouTube | 807 inscritos | **+26% em 11 dias** (639 em 26/09) | — |
-| LinkedIn | — | não conectado | — |
+| LinkedIn | — | fora do Metricool (manual) | — |
 
 **O "teto dos 300" tem nome.** Toda rede mostra o vídeo primeiro a um grupo pequeno (parte dos seus seguidores e alguns desconhecidos). Se esse grupo assiste e repassa, o vídeo vai para o próximo grupo; se arrasta para cima, o vídeo para ali. Quando você paga, pula essa prova. Quando não paga, o vídeo precisa passar nela. Por isso o trabalho é passar na prova, e os seus dados mostram onde você está reprovando:
 
@@ -42,7 +44,7 @@ Tudo abaixo é permitido, e a maior parte é gratuita.
 - Meta: taxa de 3 segundos acima de 50% no IG; "assistiu vs. passou" acima de 70% no Shorts.
 
 ### B. Testar com desconhecidos sem gastar seguidores — Trial Reels
-O Instagram deixa publicar um reel que aparece **só para não seguidores**. Se performar, você promove para o feed. Use às terças e quintas para testar dois ganchos do mesmo vídeo. O Metricool já agenda Trial Reel (`instagramData.type = "TRIAL_REEL"`).
+O Instagram deixa publicar um reel que aparece **só para não seguidores**. Se performar, você promove para o feed. Use às quartas e quintas, 18h, para testar o segundo gancho do vídeo do dia. O Metricool já agenda Trial Reel (`instagramData.type = "TRIAL_REEL"`).
 
 ### C. Pegar emprestado o público dos outros — Collab
 O post em colaboração (co-autor) aparece no feed dos dois perfis, soma as curtidas e é o caminho mais rápido para quem não te conhece. Você já entrevista Confebras, OCB, Sicredi, Unicred, ABRH, HJ Conference, Tania Zanella, Telma Galletti, Heloisa Lopes. A entrevista com a Tania teve 27 envios **sem** collab. Daqui em diante, toda entrevista e todo evento sai como collab com o convidado e a instituição. O Metricool aceita `collaborators` no agendamento.
@@ -56,13 +58,13 @@ O post em colaboração (co-autor) aparece no feed dos dois perfis, soma as curt
 - **Instagram:** palavra-chave na primeira linha da legenda; o Instagram já indexa legenda na busca.
 
 ### F. LinkedIn: o seu público pagante (palestras, SIPAT, consultoria)
-- Conecte o LinkedIn ao Metricool (Configurações da marca > Conexões). Sem isso, a rotina não consegue publicar nem medir.
-- **Newsletter do LinkedIn**: cada edição notifica todos os seguidores, de graça. Transforme o Radar do Cooperativismo em newsletter semanal.
+Por decisão sua, o LinkedIn fica fora do Metricool e é publicado à mão; os roteiros já trazem o post pronto.
+- **Newsletter do LinkedIn**: cada edição notifica todos os seguidores, de graça. O Radar do Cooperativismo pode virar newsletter semanal.
 - Texto nativo até 1.500 caracteres ou carrossel em PDF. Link só no primeiro comentário.
 - Comentário substantivo nos primeiros 60 minutos em posts de OCB, Confebras, Sescoop e ABRH: seu nome aparece para o público deles.
 
 ### G. Uma ideia, quatro peças, quatro horários
-Grade em `python -m crescimento.calendario`: segunda RH e Governança, terça Dr. Di, quarta Educação Financeira, quinta bastidor com lição, sexta Lições de Vida, sábado resposta a comentário. LinkedIn 8h, Instagram 10h, TikTok 10h30, YouTube 16h. Domingo só Stories.
+A grade oficial é a sua (seg 10h Lições de Vida, ter 18h Radar Cooperativo, qua 10h Educação Financeira, qui 10h RH e Governança, sex 10h Doutor Di). Cada vídeo vira Reel no Instagram, corte de 60-90s no TikTok meia hora depois, Short no YouTube às 16h e texto no LinkedIn às 8h. Trial Reels às quartas e quintas, 18h. Veja `python -m crescimento.calendario`.
 
 ### H. O que você já tem e não está usando
 - **Palestras:** QR code no último slide para o Instagram + "comenta PALESTRA" para receber os slides. Cada SIPAT com 100 pessoas vira dezenas de seguidores qualificados.
@@ -76,11 +78,11 @@ Seus picos pagos (SIPAT no TikTok com 13 mil views, os dias de 14 a 19 mil de al
 
 | Tarefa | Quem faz | Como |
 |---|---|---|
-| Ler métricas todo dia e comparar com a mediana | Rotina diária (Claude + Metricool) | `crescimento/rotina_diaria.md` |
-| Escolher o post da semana para Trial Reel, collab ou impulsionar | Rotina diária | regra da seção 3.I |
+| Ler métricas e reorganizar o sistema toda segunda | Orquestrador semanal (Claude + Metricool) | `MASTER-GROWTH.md` |
+| Escolher o post da semana para Trial Reel, collab ou impulsionar | Orquestrador semanal | regra da seção 3.I |
 | Gerar 5 ganchos, legendas por rede, título de Short, post de LinkedIn | `ganchos.py` (Claude) | uma ideia ou transcrição na entrada |
 | Cortar vídeos longos em verticais | `cortes.py` (ffmpeg) | vídeo + .srt |
-| Agendar nos melhores horários | Metricool | rotina deixa como rascunho para você aprovar |
+| Agendar nos melhores horários | Pacote de publicação (terça) | rascunhos no Metricool para você aprovar |
 | Responder comentário com palavra-chave no Direct | ManyChat | configurar uma vez |
 | **Gravar** | você | 3 blocos por semana de 40 min, gancho lido do roteiro |
 
@@ -90,7 +92,7 @@ Seus picos pagos (SIPAT no TikTok com 13 mil views, os dias de 14 a 19 mil de al
 - Reels com zero envios: de 50% para menos de 20%.
 - TikTok: mediana orgânica de 146 para 400 views, só com cortes de 31-90s.
 - Pelo menos 2 collabs por semana.
-- LinkedIn conectado e newsletter com a primeira edição publicada.
+- Newsletter do LinkedIn com a primeira edição publicada.
 
 Medição: rode `python -m crescimento.diagnostico` com os CSVs novos a cada sexta.
 

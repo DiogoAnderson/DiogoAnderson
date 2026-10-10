@@ -1,8 +1,8 @@
-"""Monta a grade semanal "1 ideia -> 4 redes" com horários do Metricool.
+"""Monta a grade semanal do Master Growth: um vídeo vira peças nativas em cada rede.
 
-Cada ideia vira peças nativas em cada rede, publicadas em horários diferentes
-(nada de postar o mesmo arquivo no mesmo minuto em todas). A saída é uma lista
-de dicionários no formato que a rotina diária entrega ao createScheduledPost do Metricool.
+Espelha a seção 3 do MASTER-GROWTH.md (pasta _Master-Growth no Drive), que é a fonte de
+verdade. Cada quadro sai em horários diferentes por rede, nunca o mesmo arquivo no mesmo
+minuto em todas.
 """
 
 from __future__ import annotations
@@ -10,29 +10,26 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, time, timedelta
-from pathlib import Path
 
-DADOS = Path(__file__).parent / "dados"
 
-# Pilares do calendário editorial do autor (segunda, quarta, sexta) + dias de reforço.
-PILAR_DO_DIA = {
-    0: "RH e Governança",
-    1: "Dr. Di (série de educação financeira com humor)",
-    2: "Educação Financeira",
-    3: "Bastidor com lição (evento, palestra, cliente)",
-    4: "Lições de Vida",
-    5: "Caixinha de perguntas / resposta a comentário",
-    6: None,  # domingo: descanso, só stories
+# Grade oficial do Master Growth (MASTER-GROWTH.md, seção 3). Sábado e domingo: só Stories.
+QUADRO_DO_DIA = {
+    0: ("Lições de Vida", time(10, 0)),
+    1: ("Radar Cooperativo", time(18, 0)),
+    2: ("Educação Financeira", time(10, 0)),
+    3: ("RH e Governança", time(10, 0)),
+    4: ("Doutor Di", time(10, 0)),
 }
 
 DIAS = ["seg", "ter", "qua", "qui", "sex", "sáb", "dom"]
 
 # Formato por rede: o que cada algoritmo premia hoje.
 FORMATOS = {
-    "instagram": "REEL (30-60s) — às terças e quintas como TRIAL_REEL para testar gancho com não seguidores",
-    "tiktok": "vídeo 31-90s com palavra-chave falada nos 3 primeiros segundos e na legenda",
-    "youtube": "short (até 60s) com 'vídeo relacionado' apontando para o episódio longo",
-    "linkedin": "texto até 1.500 caracteres ou carrossel em PDF; link só no 1º comentário",
+    "instagram": "REEL com o vídeo inteiro",
+    "instagram_trial": "TRIAL_REEL com o corte e o gancho B (experimento E3)",
+    "tiktok": "corte de 60-90s com o termo de busca falado nos 3 primeiros segundos",
+    "youtube": "short com 'vídeo relacionado' apontando para o vídeo longo",
+    "linkedin": "texto publicado à mão (fora do Metricool por decisão do Diogo)",
 }
 
 
@@ -45,35 +42,31 @@ class Peca:
     instagram_tipo: str | None = None
 
 
-def _horarios() -> dict:
-    return json.loads((DADOS / "melhores_horarios.json").read_text(encoding="utf-8"))
+def _mais(hora: time, minutos: int) -> time:
+    return (datetime.combine(date.min, hora) + timedelta(minutes=minutos)).time()
 
 
 def grade_semana(segunda: date) -> list[Peca]:
-    """Gera a grade de segunda a sábado a partir da segunda-feira informada."""
+    """Gera as peças de segunda a sexta a partir da segunda-feira informada."""
     if segunda.weekday() != 0:
         raise ValueError("A grade começa numa segunda-feira")
-    h = _horarios()
     pecas: list[Peca] = []
-    for i in range(7):
+    for i, (quadro, hora) in QUADRO_DO_DIA.items():
         dia = segunda + timedelta(days=i)
-        pilar = PILAR_DO_DIA[dia.weekday()]
-        if pilar is None:
-            continue
-        # Instagram e TikTok no pico da manhã com 30 min de diferença;
-        # YouTube no pico da tarde; LinkedIn só em dia útil, cedo.
         slots = [
-            ("instagram", time(h["instagram"]["pico_manha"], 0)),
-            ("tiktok", time(h["tiktok"]["pico_manha"], 30)),
-            ("youtube", time(h["youtube"]["pico_tarde"], 0)),
+            (dia, hora, "instagram", "REEL"),
+            (dia, _mais(hora, 30), "tiktok", None),
+            (dia, time(16, 0), "youtube", None),
         ]
-        if dia.weekday() < 5:
-            slots.append(("linkedin", time(h["linkedin"]["pico_manha"], 0)))
-        for rede, hora in slots:
-            tipo = None
-            if rede == "instagram":
-                tipo = "TRIAL_REEL" if dia.weekday() in (1, 3) else "REEL"
-            pecas.append(Peca(datetime.combine(dia, hora).isoformat(), rede, pilar, FORMATOS[rede], tipo))
+        if i in (2, 3):
+            slots.append((dia, time(18, 0), "instagram_trial", "TRIAL_REEL"))
+        if quadro != "Doutor Di":
+            slots.append((dia, time(8, 0), "linkedin", None))
+        for d, h, rede, tipo in slots:
+            formato = FORMATOS[rede]
+            if rede == "tiktok" and quadro == "Radar Cooperativo":
+                formato = "vídeo inteiro (o Radar já tem 60-90s)"
+            pecas.append(Peca(datetime.combine(d, h).isoformat(), rede.split("_")[0], quadro, formato, tipo))
     return sorted(pecas, key=lambda p: p.data_hora)
 
 
