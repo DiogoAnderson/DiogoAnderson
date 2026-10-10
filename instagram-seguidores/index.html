@@ -15,13 +15,13 @@
     :root:not([data-theme="light"]) {
       --bg: #141413; --surface: #1e1e1c; --text: #ececea; --muted: #a3a39d;
       --border: #33332f; --accent: #f06bb5; --accent-soft: #3a1f2f;
-      --good: #5fd39a; --bad: #ff8a80;
+      --good: #5fd39a; --bad: #ff8a80; color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
     --bg: #141413; --surface: #1e1e1c; --text: #ececea; --muted: #a3a39d;
     --border: #33332f; --accent: #f06bb5; --accent-soft: #3a1f2f;
-    --good: #5fd39a; --bad: #ff8a80;
+    --good: #5fd39a; --bad: #ff8a80; color-scheme: dark;
   }
   * { box-sizing: border-box; }
   body {
@@ -80,6 +80,12 @@
   .msg.warn { color: var(--bad); font-weight: 600; }
   ul.list li .right { display: flex; align-items: center; gap: 8px; }
   ul.list li button.mini { padding: 2px 8px; font-size: .8rem; }
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+  .overlay[hidden] { display: none; }
+  .dialog { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; max-width: 360px; width: 100%; }
+  .dialog p { margin: 0 0 16px; }
+  .dialog .actions { display: flex; gap: 8px; justify-content: flex-end; }
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .muted { color: var(--muted); }
   .hidden { display: none; }
 </style>
@@ -114,6 +120,7 @@
       <button class="primary" id="saveBtn" disabled>Salvar fotografia</button>
     </div>
     <div class="msg" id="importMsg"></div>
+    <div class="msg muted" id="syncMsg">Salvo só neste navegador. Use 'Exportar backup' de vez em quando.</div>
   </section>
 
   <section id="currentSec" class="hidden">
@@ -178,6 +185,16 @@
   </section>
 </main>
 
+<div class="overlay" id="confirmBox" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="confirmText">
+    <p id="confirmText"></p>
+    <div class="actions">
+      <button id="confirmNo">Cancelar</button>
+      <button class="primary" id="confirmYes">Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const STORE_KEY = "ig-seguidores-snapshots-v1";
 const STATE_KEY = "ig-seguidores-fila-v1";
@@ -205,7 +222,102 @@ function persist() {
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify(snapshots));
     localStorage.setItem(STATE_KEY, JSON.stringify(state));
-  } catch { msg("Não foi possível salvar no navegador (modo anônimo?). Use 'Exportar backup'.", "err"); }
+  } catch { if (!cloud.db) msg("Não foi possível salvar no navegador (modo anônimo?). Use 'Exportar backup'.", "err"); }
+  cloudSaveState();
+}
+
+// Quando aberto como página publicada no Claude, os dados ficam também na sua conta,
+// numa área privada (só você lê), e sincronizam entre celular e computador.
+// Aberto como arquivo local, tudo continua só no navegador.
+const cloud = { db: null, base: "", chain: Promise.resolve(), stateDirty: false };
+const PART_SIZE = 4000;   // usuários por documento (cada documento aceita até 256 KiB)
+
+function setSync(text) { $("syncMsg").textContent = text; }
+function cloudRun(fn) {
+  if (!cloud.db) return;
+  cloud.chain = cloud.chain.then(fn).then(
+    () => setSync("Salvo na sua conta Claude. Sincroniza entre seus aparelhos."),
+    e => setSync(e && e.code === "quota_exceeded"
+      ? "Espaço da conta cheio. Exclua fotografias antigas para continuar salvando."
+      : "Não consegui salvar na conta agora. Os dados seguem neste navegador; tente de novo mais tarde."));
+}
+const snapCol = () => cloud.db.collection(cloud.base + "/snapshots");
+function cloudSaveState() {
+  if (!cloud.db) return;
+  cloud.stateDirty = true;
+  cloudRun(async () => {
+    if (!cloud.stateDirty) return;     // várias mudanças seguidas viram uma escrita só
+    cloud.stateDirty = false;
+    await cloud.db.doc(cloud.base).set(JSON.parse(JSON.stringify(state)));
+  });
+}
+function cloudDeleteSnapshot(date) {
+  cloudRun(async () => {
+    const old = await snapCol().where("date", "==", date).get();
+    for (const d of old.docs) await snapCol().doc(d.id).delete();
+  });
+}
+function cloudSaveSnapshot(snap) {
+  cloudDeleteSnapshot(snap.date);
+  cloudRun(async () => {
+    for (const kind of ["followers", "following"]) {
+      const items = Object.entries(snap[kind]);
+      const parts = Math.max(1, Math.ceil(items.length / PART_SIZE));
+      for (let i = 0; i < parts; i++) {
+        await snapCol().doc(`${snap.date}~${kind}~${i}`)
+          .set({ date: snap.date, kind, part: i, parts, items: items.slice(i * PART_SIZE, (i + 1) * PART_SIZE) });
+      }
+    }
+  });
+}
+async function cloudInit() {
+  if (!window.claude || !window.claude.use) return;
+  try {
+    const [db, user] = await Promise.all([claude.use("db"), claude.use("user")]);
+    const uid = db && user && await user.id();
+    if (!uid) { setSync("Salvo só neste navegador. Use 'Exportar backup' de vez em quando."); return; }
+    cloud.base = `data/users/${uid}/app/state`;
+    const [stDoc, snapQ] = await Promise.all([db.doc(cloud.base).get(), db.collection(cloud.base + "/snapshots").limit(1000).get()]);
+    cloud.db = db;
+    if (!stDoc.exists && snapQ.empty) {
+      // primeira vez com a conta: leva o que já estava neste navegador
+      if (snapshots.length || state.exceptions.length) { snapshots.forEach(cloudSaveSnapshot); cloudSaveState(); }
+      else setSync("Salvo na sua conta Claude. Sincroniza entre seus aparelhos.");
+      return;
+    }
+    const byDate = {};
+    for (const d of snapQ.docs) {
+      const b = d.data();
+      const s = byDate[b.date] ||= { date: b.date, followers: {}, following: {} };
+      for (const [u, ts] of b.items) s[b.kind][u] = ts;
+    }
+    snapshots = Object.values(byDate);
+    if (stDoc.exists) state = Object.assign({ exceptions: [], done: {}, skipped: [], limit: 50, history: [] }, stDoc.data());
+    try {
+      snapshots.sort((a, b) => a.date.localeCompare(b.date));
+      localStorage.setItem(STORE_KEY, JSON.stringify(snapshots));
+      localStorage.setItem(STATE_KEY, JSON.stringify(state));
+    } catch {}
+    setSync("Salvo na sua conta Claude. Sincroniza entre seus aparelhos.");
+    render();
+  } catch {
+    cloud.db = null;
+    setSync("Não consegui acessar sua conta agora. Os dados seguem neste navegador.");
+  }
+}
+
+// Confirmação dentro da página (a página publicada não mostra janelas do navegador).
+function ask(text, yes = "Confirmar") {
+  return new Promise(resolve => {
+    const box = $("confirmBox");
+    $("confirmText").textContent = text;
+    $("confirmYes").textContent = yes;
+    box.hidden = false;
+    $("confirmYes").focus();
+    const done = ok => { box.hidden = true; $("confirmYes").onclick = $("confirmNo").onclick = null; resolve(ok); };
+    $("confirmYes").onclick = () => done(true);
+    $("confirmNo").onclick = () => done(false);
+  });
 }
 const cleanUser = u => u.trim().replace(/^@/, "").replace(/^https?:\/\/(www\.)?instagram\.com\//i, "").replace(/\/.*$/, "").toLowerCase();
 
@@ -283,15 +395,16 @@ async function onFiles(files) {
   }
 }
 
-$("saveBtn").onclick = () => {
+$("saveBtn").onclick = async () => {
   if (!pending) return;
   const date = $("snapDate").value || today();
   const existing = snapshots.findIndex(s => s.date === date);
-  if (existing >= 0 && !confirm(`Já existe uma fotografia de ${fmtDate(date)}. Substituir?`)) return;
+  if (existing >= 0 && !await ask(`Já existe uma fotografia de ${fmtDate(date)}. Substituir pela nova?`, "Substituir")) return;
   if (existing >= 0) snapshots.splice(existing, 1);
   snapshots.push({ date, ...pending });
   state.skipped = [];
   persist();
+  cloudSaveSnapshot(snapshots.find(s => s.date === date));
   pending = null; $("saveBtn").disabled = true;
   msg(`Fotografia de ${fmtDate(date)} salva.`, "ok");
   render();
@@ -386,9 +499,9 @@ function render() {
     tr.innerHTML = `<td>${fmtDate(s.date)}</td><td>${Object.keys(s.followers).length}</td><td>${Object.keys(s.following).length}</td>`;
     const td = document.createElement("td"); const del = document.createElement("button");
     del.textContent = "Excluir";
-    del.onclick = () => {
-      if (!confirm(`Excluir a fotografia de ${fmtDate(s.date)}?`)) return;
-      snapshots = snapshots.filter(x => x !== s); persist(); render();
+    del.onclick = async () => {
+      if (!await ask(`Excluir a fotografia de ${fmtDate(s.date)}?`, "Excluir")) return;
+      snapshots = snapshots.filter(x => x !== s); persist(); cloudDeleteSnapshot(s.date); render();
     };
     td.appendChild(del); tr.appendChild(td); $("histBody").appendChild(tr);
   });
@@ -494,8 +607,8 @@ function renderQueue(last, naoSeguem) {
   actions.appendChild(open);
 
   const btn = (text, fn) => { const b = document.createElement("button"); b.textContent = text; b.onclick = fn; actions.appendChild(b); };
-  btn("Já deixei de seguir", () => {
-    if (doneToday() >= state.limit && !confirm("Você já passou do limite diário. Marcar mesmo assim?")) return;
+  btn("Já deixei de seguir", async () => {
+    if (doneToday() >= state.limit && !await ask("Você já chegou ao limite de hoje. Marcar mesmo assim?", "Marcar")) return;
     state.done[u] = today();
     state.skipped = state.skipped.filter(x => x !== u);
     state.history.push({ type: "done", user: u });
@@ -527,7 +640,14 @@ $("undoBtn").onclick = () => {
 $("search").oninput = () => render();
 
 // ---------- exportações ----------
-function download(name, text, type) {
+async function download(name, text, type) {
+  // Na página publicada, o download passa pela permissão "downloads" do Claude.
+  const dl = window.claude && window.claude.use ? await claude.use("downloads") : null;
+  if (dl) {
+    try { await dl.save({ filename: name, data: new Blob([text], { type }) }); }
+    catch (e) { if (e && e.code !== "declined") msg("Não consegui baixar o arquivo.", "err"); }
+    return;
+  }
   const url = URL.createObjectURL(new Blob([text], { type }));
   const a = document.createElement("a"); a.href = url; a.download = name; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -554,12 +674,13 @@ $("backupFile").onchange = async e => {
     }
     const byDate = Object.fromEntries(snapshots.map(s => [s.date, s]));
     data.forEach(s => byDate[s.date] = s);
-    snapshots = Object.values(byDate); persist(); render();
+    snapshots = Object.values(byDate); persist(); data.forEach(cloudSaveSnapshot); render();
     msg(`Backup restaurado: ${data.length} fotografia(s).`, "ok");
   } catch { msg("Arquivo de backup inválido.", "err"); }
 };
 
 render();
+cloudInit();
 </script>
 </body>
 </html>
