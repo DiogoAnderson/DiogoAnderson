@@ -1,0 +1,8 @@
+{
+  "fonte": "Metricool getBestTimeToPostByNetwork, semana 2026-10-12 a 2026-10-18, America/Sao_Paulo",
+  "nota": "dia_semana: 1=segunda ... 7=domingo; valores relativos, maior = melhor",
+  "instagram": {"pico_manha": 10, "pico_tarde": 18, "melhores_dias": [5, 3, 4], "piores_dias": [6, 7]},
+  "tiktok":    {"pico_manha": 10, "pico_tarde": 18, "melhores_dias": [4, 3, 5], "piores_dias": [7, 6]},
+  "youtube":   {"pico_manha": 10, "pico_tarde": 16, "melhores_dias": [3, 4, 5], "piores_dias": [7, 6]},
+  "linkedin":  {"pico_manha": 8,  "pico_tarde": 12, "melhores_dias": [2, 3, 4], "piores_dias": [6, 7], "obs": "sem dados no Metricool; padrão B2B Brasil"}
+}
