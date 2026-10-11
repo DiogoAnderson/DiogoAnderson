@@ -21,6 +21,10 @@ Símbolo: o farol (luz que orienta), integrado ao "i" final de Angioletti, com a
 
 ## Tipografia (equivalentes gratuitas mais próximas)
 
-- Nome "Angioletti" e títulos: serifada clássica de alto contraste — **Cormorant Garamond** (SemiBold/Bold).
+- Nome "Angioletti" e títulos: serifada clássica — **EB Garamond** (SemiBold/Bold). Trocada da Cormorant em 11/10/2026: a Cormorant desloca os acentos do português na renderização.
 - "EDUCAÇÃO EXECUTIVA" e rótulos: sem serifa em caixa alta, espaçada — **Montserrat** (Regular, espaçamento largo).
-- Frases e citações: **Cormorant Garamond Italic**.
+- Frases e citações: **EB Garamond Italic**.
+
+## Peças em HTML
+
+`marca/modelos/` tem os modelos (capa de Reel 1080×1920 e lâmina de carrossel 1080×1350). Para gerar: `python -m crescimento.pecas capa --foto marca/fotos/estudio-01.jpg --selo "Educação Financeira" --gancho "..." --saida capa.png`.

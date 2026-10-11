@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Capa de Reel — Angioletti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,600;0,700;1,500&family=Montserrat:wght@400;600&display=block" rel="stylesheet">
+<style>
+  :root {
+    --marinho-profundo: #061C34; --marinho: #0A1F3A;
+    --dourado: #D9A04A; --dourado-claro: #F2CF8A; --creme: #F5E9D3;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; background: var(--marinho-profundo); overflow: hidden; }
+  .capa { position: relative; width: 1080px; height: 1920px; }
+  /* Foto do Diogo, sempre real; o rosto fica no terço superior do recorte 3:4 do perfil */
+  .foto { position: absolute; inset: 0; background-size: cover; background-position: var(--foco, center 30%); }
+  .veu { position: absolute; inset: 0;
+    background:
+      linear-gradient(180deg, rgba(6,28,52,.55) 0%, rgba(6,28,52,0) 22%, rgba(6,28,52,0) 42%, rgba(6,28,52,.88) 66%, var(--marinho-profundo) 86%),
+      radial-gradient(120% 60% at 85% 8%, rgba(242,207,138,.18), transparent 60%); }
+  /* Facho do farol: assinatura da marca, discreto */
+  .facho { position: absolute; top: 250px; right: -40px; width: 620px; height: 180px;
+    background: linear-gradient(100deg, rgba(242,207,138,.0) 0%, rgba(242,207,138,.22) 60%, rgba(242,207,138,0) 100%);
+    transform: rotate(-12deg); filter: blur(18px); }
+  .selo { position: absolute; top: 300px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; gap: 22px;
+    font: 600 28px/1 Montserrat, sans-serif; letter-spacing: .32em; color: var(--dourado); text-transform: uppercase; }
+  .selo::before, .selo::after { content: ""; width: 70px; height: 2px; background: var(--dourado); opacity: .9; }
+  .bloco { position: absolute; left: 90px; right: 90px; top: 1060px; text-align: center; }
+  .gancho { font: 700 104px/1.04 "EB Garamond", serif; color: var(--dourado-claro);
+    text-shadow: 0 4px 30px rgba(0,0,0,.45); }
+  .gancho em { font-style: normal; color: var(--dourado); }
+  .onda { margin: 34px auto 0; width: 360px; height: 26px; }
+  .apoio { margin-top: 26px; font: italic 500 46px/1.2 "EB Garamond", serif; color: var(--creme); }
+  .assinatura { position: absolute; left: 0; right: 0; top: 1590px; text-align: center;
+    font: 400 24px/1 Montserrat, sans-serif; letter-spacing: .38em; color: var(--creme); opacity: .85; text-transform: uppercase; }
+  .assinatura b { display: block; margin-bottom: 14px; font: 600 54px/1 "EB Garamond", serif; letter-spacing: 0; text-transform: none; color: var(--dourado); }
+</style>
+</head>
+<body>
+<div class="capa">
+  <div class="foto" id="foto"></div>
+  <div class="veu"></div>
+  <div class="facho"></div>
+  <div class="selo" id="selo">Educação Financeira</div>
+  <div class="bloco">
+    <h1 class="gancho" id="gancho">O 13º já <em>tem dono?</em></h1>
+    <svg class="onda" viewBox="0 0 360 26" aria-hidden="true"><path d="M2 18 C 80 2, 140 2, 200 14 S 320 24, 358 6" fill="none" stroke="#D9A04A" stroke-width="3" stroke-linecap="round"/></svg>
+    <p class="apoio" id="apoio">Antes de cair, ele já foi gasto</p>
+  </div>
+  <div class="assinatura"><b>Angioletti</b>Pessoas · Propósito · Prosperidade</div>
+</div>
+<script>
+  // Parâmetros pela URL: ?foto=...&selo=...&gancho=...&destaque=...&apoio=...&foco=...
+  const p = new URLSearchParams(location.search);
+  const set = (id, v) => { if (v !== null) document.getElementById(id).textContent = v; };
+  if (p.get("foto")) document.getElementById("foto").style.backgroundImage = `url("${p.get("foto")}")`;
+  if (p.get("foco")) document.getElementById("foto").style.setProperty("--foco", p.get("foco"));
+  set("selo", p.get("selo"));
+  set("apoio", p.get("apoio"));
+  if (p.get("gancho")) {
+    const g = document.getElementById("gancho"), d = p.get("destaque");
+    g.textContent = p.get("gancho");
+    if (d && p.get("gancho").includes(d)) {
+      const [antes, ...resto] = p.get("gancho").split(d);
+      g.textContent = antes;
+      const em = document.createElement("em"); em.textContent = d; g.append(em, resto.join(d));
+    }
+  }
+  if (!p.get("apoio")) document.getElementById("apoio").remove();
+</script>
+</body>
+</html>

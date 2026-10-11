@@ -60,3 +60,12 @@ def test_cortes_escolhem_frase_com_gancho():
     assert achados[0].fim - achados[0].inicio >= 20
     cmd = cortes.comando_ffmpeg("live.mp4", achados[0], "c1.mp4")
     assert "-ss 4.00" in cmd and "1080:1920" in cmd
+
+
+def test_pecas_monta_url_com_foto_local_e_acentos():
+    from crescimento import pecas
+
+    url = pecas.montar_url("capa", {"foto": "marca/banner-farol.png", "selo": "Educação Financeira", "gancho": "Três notícias", "apoio": ""})
+    assert url.startswith("file://") and "capa-reel.html?" in url
+    assert "foto=file%3A%2F%2F" in url and "Educa%C3%A7%C3%A3o" in url
+    assert "apoio=" not in url

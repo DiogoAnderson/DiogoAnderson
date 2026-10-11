@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Lâmina de carrossel — Angioletti</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,600;0,700;1,500&family=Montserrat:wght@400;600&display=block" rel="stylesheet">
+<style>
+  :root { --mp: #061C34; --m: #0A1F3A; --d: #D9A04A; --dc: #F2CF8A; --c: #F5E9D3; }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1350px; overflow: hidden; background: var(--mp); }
+  .lamina { position: relative; width: 1080px; height: 1350px; padding: 110px 100px;
+    background: radial-gradient(90% 55% at 100% 0%, rgba(242,207,138,.14), transparent 60%), linear-gradient(180deg, var(--m), var(--mp)); }
+  .lamina::after { content: ""; position: absolute; inset: 40px; border: 1.5px solid rgba(217,160,74,.45); pointer-events: none; }
+  .topo { display: flex; justify-content: space-between; font: 600 24px/1 Montserrat, sans-serif; letter-spacing: .3em; color: var(--d); text-transform: uppercase; }
+  .titulo { margin-top: 150px; font: 700 96px/1.05 "EB Garamond", serif; color: var(--dc); }
+  .linha { width: 120px; height: 3px; background: var(--d); margin: 48px 0; }
+  .texto { font: 400 40px/1.5 Montserrat, sans-serif; color: var(--c); max-width: 840px; }
+  .rodape { position: absolute; left: 100px; right: 100px; bottom: 100px; display: flex; justify-content: space-between; align-items: baseline; gap: 40px; }
+  .rodape b { font: 600 46px/1 "EB Garamond", serif; color: var(--d); }
+  .rodape span { font: italic 500 26px/1 "EB Garamond", serif; color: var(--c); opacity: .85; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="lamina">
+  <div class="topo"><span id="selo">Radar Cooperativo</span><span id="num">1/6</span></div>
+  <h1 class="titulo" id="titulo">Três notícias que mexem no seu bolso esta semana</h1>
+  <div class="linha"></div>
+  <p class="texto" id="texto">Arraste para o lado. Na última lâmina, a pergunta da semana.</p>
+  <div class="rodape"><b>Angioletti</b><span>Mais que aprendizado, iluminamos novas possibilidades.</span></div>
+</div>
+<script>
+  const p = new URLSearchParams(location.search);
+  for (const id of ["selo", "num", "titulo", "texto"]) if (p.get(id)) document.getElementById(id).textContent = p.get(id);
+</script>
+</body>
+</html>
