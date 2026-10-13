@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Thumbnail Mentor Sincerão — Angioletti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@800&display=block" rel="stylesheet">
+<style>
+  /* Modelo do Diogo (Drive: _Master-Growth/Modelos-de-capa/Mentor Sincerao), 13/10/2026.
+     Esquerda: cenário escuro e quente ligado ao tema do episódio + título em três linhas.
+     Direita: o Diogo recortado, sorrindo, mão no queixo, olhando para a câmera. */
+  :root { --amarelo: #F2C311; --vermelho: #E21414; --branco: #FFFFFF; }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 1280px; height: 720px; background: #120d08; overflow: hidden; }
+  .thumb { position: relative; width: 1280px; height: 720px; overflow: hidden; }
+  /* Cenário do episódio (foto ou arte de objetos, nunca rosto gerado por IA) */
+  .fundo { position: absolute; inset: 0; background-size: cover; background-position: center;
+    background-color: #1a120a;
+    background-image: var(--fundo, radial-gradient(60% 70% at 78% 30%, #6b4a1e 0%, #2a1a0c 55%, #120d08 100%)); }
+  .luzes { position: absolute; inset: 0;
+    background:
+      radial-gradient(14px 14px at 1170px 50px, rgba(255,214,140,.95), transparent 70%),
+      radial-gradient(90px 90px at 1170px 50px, rgba(255,190,90,.35), transparent 70%),
+      radial-gradient(10px 10px at 780px 190px, rgba(255,214,140,.9), transparent 70%),
+      radial-gradient(70px 70px at 780px 190px, rgba(255,190,90,.3), transparent 70%); }
+  /* Escurece a esquerda para o título saltar */
+  .veu { position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(0,0,0,.62) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,0) 62%); }
+  /* Foto real do Diogo no lado direito; a borda esquerda some no cenário, sem recorte */
+  .foto { position: absolute; right: 0; top: 0; width: 760px; height: 720px;
+    background-size: cover; background-position: var(--foco, center 18%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 26%);
+            mask-image: linear-gradient(90deg, transparent 0%, #000 26%); }
+  .titulo { position: absolute; left: 70px; top: 130px; font-family: Anton, "Arial Narrow", sans-serif;
+    text-transform: uppercase; line-height: .92; }
+  .l1 { font-size: 146px; color: var(--branco); text-shadow: 0 6px 18px rgba(0,0,0,.75); }
+  .l2 { margin-top: 22px; font-size: 146px; color: var(--amarelo); text-shadow: 0 6px 18px rgba(0,0,0,.75); white-space: nowrap; }
+  .l2 small { font-size: 62px; color: var(--branco); margin-left: 18px; vertical-align: 52%; letter-spacing: .01em; }
+  .l3 { margin-top: 26px; font-size: 76px; color: var(--branco); white-space: nowrap; letter-spacing: .01em;
+    text-shadow: 0 0 6px var(--vermelho), 0 0 18px var(--vermelho), 0 0 36px rgba(226,20,20,.8); }
+  .l3 em { font-style: normal; color: var(--vermelho);
+    text-shadow: 0 0 6px #ff6b6b, 0 0 18px var(--vermelho), 0 0 36px rgba(226,20,20,.9); -webkit-text-stroke: 1.5px #ffb3b3; }
+  .nome { position: absolute; right: 50px; bottom: 34px; font: 800 26px/1 Montserrat, sans-serif; color: var(--branco);
+    letter-spacing: .02em; text-shadow: 0 2px 8px rgba(0,0,0,.8); }
+</style>
+</head>
+<body>
+<div class="thumb">
+  <div class="fundo" id="fundo"></div>
+  <div class="luzes"></div>
+  <div class="veu"></div>
+  <div class="foto" id="foto"></div>
+  <div class="titulo">
+    <div class="l1">Mentor</div>
+    <div class="l2">Sincerão<small id="parte"></small></div>
+    <div class="l3" id="subtitulo"></div>
+  </div>
+  <div class="nome">DIOGO ANGIOLETTI</div>
+</div>
+<script>
+  // Campos pela URL: parte, titulo (subtítulo do episódio), destaque (trecho do título em vermelho), foto, fundo
+  const p = new URLSearchParams(location.search);
+  const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  if (p.get("parte")) document.getElementById("parte").textContent = "Parte " + p.get("parte");
+  const titulo = p.get("titulo") || "", destaque = p.get("destaque") || "";
+  let html = esc(titulo);
+  if (destaque && titulo.toLowerCase().includes(destaque.toLowerCase())) {
+    const i = titulo.toLowerCase().indexOf(destaque.toLowerCase());
+    html = esc(titulo.slice(0, i)) + "<em>" + esc(titulo.slice(i, i + destaque.length)) + "</em>" + esc(titulo.slice(i + destaque.length));
+  }
+  document.getElementById("subtitulo").innerHTML = html;
+  if (p.get("foto")) document.getElementById("foto").style.backgroundImage = `url("${p.get("foto")}")`;
+  if (p.get("foco")) document.getElementById("foto").style.setProperty("--foco", p.get("foco"));
+  if (p.get("fundo")) document.getElementById("fundo").style.setProperty("--fundo", `url("${p.get("fundo")}")`);
+</script>
+</body>
+</html>

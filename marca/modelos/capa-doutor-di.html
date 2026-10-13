@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Capa Doutor Di — Angioletti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Kalam:wght@700&family=Montserrat:wght@700;800;900&display=block" rel="stylesheet">
+<style>
+  /* Modelo do Diogo (Drive: _Master-Growth/Modelos-de-capa/Doutor Di, "Modelo de capa vídeo Dr Di.png"), 13/10/2026.
+     Vertical 1080×1920: Dr. Di de jaleco à esquerda, cartão de papel com o episódio à direita,
+     faixas de pincel amarelas, balão com a piada, "Assista agora" + "Link na bio" embaixo. */
+  :root { --marinho: #0B1A33; --marinho2: #10284A; --amarelo: #F6C431; --papel: #F3EFE6; --branco: #fff; }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--marinho); }
+  .capa { position: relative; width: 1080px; height: 1920px; overflow: hidden;
+    background: radial-gradient(70% 45% at 30% 40%, #1d3a63 0%, var(--marinho) 70%); }
+  .foto { position: absolute; left: 0; top: 320px; width: 700px; height: 1253px;
+    background-size: cover; background-position: center top;
+    -webkit-mask-image: linear-gradient(180deg, #000 82%, transparent 100%), linear-gradient(90deg, #000 85%, transparent 100%);
+    -webkit-mask-composite: source-in; mask-composite: intersect; }
+  .logo { position: absolute; left: 30px; top: 24px; width: 430px; height: 287px; background: url("../doutor-di/logo-dr-di.png") center/contain no-repeat;
+    -webkit-mask-image: radial-gradient(closest-side, #000 75%, transparent 100%); }
+  /* Faixa de pincel: retângulo com bordas irregulares */
+  .pincel { clip-path: polygon(2% 12%, 9% 4%, 22% 9%, 38% 2%, 55% 8%, 71% 1%, 86% 7%, 99% 3%, 97% 30%, 100% 55%, 96% 78%, 99% 96%, 84% 92%, 66% 99%, 49% 93%, 31% 99%, 15% 93%, 1% 98%, 3% 70%, 0% 45%); }
+  .mao { font-family: Kalam, cursive; font-weight: 700; }
+  .hoje { position: absolute; left: 585px; top: 70px; font-size: 92px; color: var(--branco); transform: rotate(-4deg); }
+  .novo { position: absolute; left: 505px; top: 185px; width: 530px; padding: 26px 0 30px; background: var(--amarelo);
+    font: 400 74px/1 Anton, sans-serif; color: var(--marinho); text-align: center; text-transform: uppercase; transform: rotate(-4deg); }
+  .seta { position: absolute; left: 470px; top: 190px; font: 700 90px/1 Kalam, cursive; color: var(--amarelo); transform: rotate(20deg); }
+  .cartao { position: absolute; left: 575px; top: 370px; width: 490px; padding: 46px 26px 40px; background: var(--papel);
+    box-shadow: 0 20px 40px rgba(0,0,0,.45); transform: rotate(2deg); text-align: center; }
+  .cartao::before { content: ""; position: absolute; top: -22px; left: 50%; width: 140px; height: 44px; margin-left: -70px;
+    background: rgba(246,196,49,.85); transform: rotate(-3deg); }
+  .ep { display: inline-block; padding: 12px 36px; background: var(--marinho); color: var(--branco);
+    font: 400 66px/1 Anton, sans-serif; text-transform: uppercase; }
+  .chamada { margin-top: 26px; font: 900 38px/1.1 Montserrat, sans-serif; color: var(--marinho); text-transform: uppercase; }
+  .doenca { margin: 22px -40px 0; padding: 30px 20px 34px; background: var(--marinho);
+    font: 400 112px/.95 Anton, sans-serif; text-transform: uppercase; color: var(--branco); }
+  .doenca span { display: block; color: var(--amarelo); white-space: nowrap; }
+  .apoio { margin: 26px -12px 0; }
+  .apoio b { display: block; padding: 10px; font: 900 40px/1 Montserrat, sans-serif; color: var(--marinho); text-transform: uppercase; }
+  .apoio i { display: block; padding: 18px 10px 20px; background: var(--amarelo); font: 400 64px/1 Anton, sans-serif; font-style: normal;
+    color: var(--marinho); text-transform: uppercase; }
+  .balao { position: absolute; left: 690px; top: 1100px; width: 350px; padding: 40px 30px; background: var(--marinho2);
+    border: 4px solid rgba(246,196,49,.6); border-radius: 46% 54% 50% 50% / 52% 48% 52% 48%;
+    font-size: 50px; line-height: 1.12; color: var(--branco); text-align: center; transform: rotate(-3deg);
+    box-shadow: 0 16px 30px rgba(0,0,0,.4); }
+  .balao::after { content: ""; position: absolute; left: 40px; bottom: -30px; border: 22px solid transparent; border-top: 36px solid var(--marinho2); transform: rotate(20deg); }
+  .assista { position: absolute; left: 60px; top: 1450px; width: 900px; padding: 34px 0 38px 250px; background: var(--amarelo);
+    font: 400 104px/1 Anton, sans-serif; color: var(--marinho); text-transform: uppercase; transform: rotate(-3deg); }
+  .yt { position: absolute; left: 95px; top: 1480px; width: 150px; height: 106px; border-radius: 30px; background: #E62117; transform: rotate(-3deg);
+    box-shadow: 0 8px 18px rgba(0,0,0,.3); }
+  .yt::after { content: ""; position: absolute; left: 58px; top: 30px; border-left: 46px solid #fff; border-top: 24px solid transparent; border-bottom: 24px solid transparent; }
+  .link { position: absolute; left: 280px; top: 1630px; padding: 22px 48px; background: var(--branco); border-radius: 60px;
+    font: 900 58px/1 Montserrat, sans-serif; color: var(--marinho); box-shadow: 0 10px 24px rgba(0,0,0,.35); }
+  .acoes { position: absolute; left: 50px; top: 1760px; display: flex; gap: 46px; font: 800 30px/1 Montserrat, sans-serif; color: var(--branco); }
+  .acoes span { text-align: center; text-transform: uppercase; }
+  .acoes span::before { content: attr(data-i); display: block; font-size: 64px; margin-bottom: 10px; }
+  .familia { position: absolute; left: 755px; top: 1745px; width: 310px; font-size: 48px; line-height: 1.05; color: var(--amarelo); transform: rotate(-6deg); text-align: center; }
+</style>
+</head>
+<body>
+<div class="capa">
+  <div class="foto" id="foto"></div>
+  <div class="logo"></div>
+  <div class="hoje mao">Hoje tem</div>
+  <div class="novo pincel">Episódio novo</div>
+  <div class="cartao">
+    <div class="ep pincel" id="ep">Ep. 13</div>
+    <div class="chamada" id="chamada"></div>
+    <div class="doenca pincel"><span id="d1" style="color:#fff"></span><span id="d2"></span></div>
+    <div class="apoio" id="apoio"><b id="a1"></b><i class="pincel" id="a2"></i></div>
+  </div>
+  <div class="balao mao" id="balao"></div>
+  <div class="assista pincel">Assista agora!</div>
+  <div class="yt"></div>
+  <div class="link">🔗 LINK NA BIO</div>
+  <div class="acoes"><span data-i="▶️">Curta</span><span data-i="💬">Comente</span><span data-i="↗️">Compartilhe</span></div>
+  <div class="familia mao">Chama a família e vem rir!</div>
+</div>
+<script>
+  // Campos: ep, chamada ("A Dona Zuleide sofre de"), doenca1, doenca2 (em amarelo), apoio1, apoio2 (faixa amarela), balao, foto, foco
+  const p = new URLSearchParams(location.search), $ = id => document.getElementById(id);
+  if (p.get("ep")) $("ep").textContent = "Ep. " + p.get("ep");
+  $("chamada").textContent = p.get("chamada") || "";
+  $("d1").textContent = p.get("doenca1") || ""; $("d2").textContent = p.get("doenca2") || "";
+  $("a1").textContent = p.get("apoio1") || ""; $("a2").textContent = p.get("apoio2") || "";
+  if (!p.get("apoio1") && !p.get("apoio2")) $("apoio").style.display = "none";
+  if (!p.get("apoio2")) $("a2").style.display = "none";
+  $("balao").textContent = p.get("balao") || "";
+  if (!p.get("balao")) $("balao").style.display = "none";
+  $("foto").style.backgroundImage = `url("${p.get("foto") || "../fotos/doutor-di-jaleco.jpg"}")`;
+  if (p.get("foco")) $("foto").style.backgroundPosition = p.get("foco");
+  // Ajuste automático: cada linha da doença cabe numa linha só; o balão fica logo abaixo do cartão
+  document.fonts.ready.then(() => {
+    for (const id of ["d1", "d2", "a2"]) {
+      const el = $(id); if (!el.textContent) continue;
+      const pai = el.parentElement, cs = getComputedStyle(pai);
+      const caixa = pai.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 50;
+      el.style.display = "inline-block"; el.style.whiteSpace = "nowrap";
+      let t = parseFloat(getComputedStyle(el).fontSize);
+      while (el.offsetWidth > caixa && t > 30) { t -= 2; el.style.fontSize = t + "px"; }
+      el.style.display = "block";
+    }
+    const c = document.querySelector(".cartao").getBoundingClientRect();
+    $("balao").style.top = Math.max(c.bottom + 40, 1100) + "px";
+  });
+</script>
+</body>
+</html>

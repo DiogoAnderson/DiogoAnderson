@@ -23,7 +23,9 @@ from urllib.parse import quote, urlencode
 
 RAIZ = Path(__file__).resolve().parent.parent
 MODELOS = RAIZ / "marca" / "modelos"
-TAMANHOS = {"capa": (1080, 1920, "capa-reel.html"), "lamina": (1080, 1350, "lamina-carrossel.html")}
+TAMANHOS = {"capa": (1080, 1920, "capa-reel.html"), "lamina": (1080, 1350, "lamina-carrossel.html"),
+            "mentor": (1280, 720, "thumb-mentor-sincerao.html"),
+            "doutordi": (1080, 1920, "capa-doutor-di.html")}
 
 
 def achar_chromium() -> str | None:
@@ -40,8 +42,9 @@ def achar_chromium() -> str | None:
 def montar_url(tipo: str, campos: dict[str, str]) -> str:
     _, _, arquivo = TAMANHOS[tipo]
     campos = {k: v for k, v in campos.items() if v}
-    if "foto" in campos and "://" not in campos["foto"]:
-        campos["foto"] = Path(campos["foto"]).resolve().as_uri()
+    for imagem in ("foto", "fundo"):
+        if imagem in campos and "://" not in campos[imagem]:
+            campos[imagem] = Path(campos[imagem]).resolve().as_uri()
     return (MODELOS / arquivo).as_uri() + "?" + urlencode(campos, quote_via=quote)
 
 
@@ -65,7 +68,8 @@ def gerar(tipo: str, campos: dict[str, str], saida: str) -> Path:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("tipo", choices=TAMANHOS)
-    for campo in ("foto", "foco", "selo", "gancho", "destaque", "apoio", "num", "titulo", "texto"):
+    for campo in ("foto", "fundo", "foco", "selo", "gancho", "destaque", "apoio", "num", "titulo", "texto", "parte",
+                  "ep", "chamada", "doenca1", "doenca2", "apoio1", "apoio2", "balao"):
         ap.add_argument(f"--{campo}")
     ap.add_argument("--saida", required=True)
     args = vars(ap.parse_args())
