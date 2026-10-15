@@ -1,0 +1,700 @@
+<title>Central Angioletti</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,600;0,700;1,500&family=Montserrat:wght@400;500;600;700;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<style>
+/* Layout: uma régua de operação — barra da marca no topo, abas por tarefa, o calendário como peça central. */
+:root {
+  --fundo: #F4F6F9; --sup: #FFFFFF; --sup2: #EAEEF4; --linha: #D6DDE7;
+  --tinta: #0B1F38; --tinta2: #4A5A70; --ouro: #A97716; --ouro-suave: #F3E6C8; --marinho: #061C34;
+  --ok: #1E7A4C; --ok-suave: #DDF1E6; --alerta: #9A5A00; --alerta-suave: #FBEBCF; --erro: #B3261E; --erro-suave: #F9DEDC;
+  --ig: #C1357D; --tt: #0E8C8C; --yt: #C4302B; --li: #0A66C2; --wa: #1E8E4E;
+  --display: "EB Garamond", Georgia, serif; --corpo: "Montserrat", "Segoe UI", system-ui, sans-serif;
+  --raio: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --fundo: #061C34; --sup: #0B2645; --sup2: #10305A; --linha: #1D3F69;
+  --tinta: #F5E9D3; --tinta2: #B8C3D3; --ouro: #E2B25E; --ouro-suave: #3A2F17; --marinho: #03101F;
+  --ok: #6FD3A0; --ok-suave: #123A2A; --alerta: #F2C46B; --alerta-suave: #3B2C0E; --erro: #FF8A80; --erro-suave: #3D1714;
+  --ig: #F06BAE; --tt: #4FD1D1; --yt: #FF7A73; --li: #6CB2FF; --wa: #5FD38D; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --fundo: #061C34; --sup: #0B2645; --sup2: #10305A; --linha: #1D3F69;
+  --tinta: #F5E9D3; --tinta2: #B8C3D3; --ouro: #E2B25E; --ouro-suave: #3A2F17; --marinho: #03101F;
+  --ok: #6FD3A0; --ok-suave: #123A2A; --alerta: #F2C46B; --alerta-suave: #3B2C0E; --erro: #FF8A80; --erro-suave: #3D1714;
+  --ig: #F06BAE; --tt: #4FD1D1; --yt: #FF7A73; --li: #6CB2FF; --wa: #5FD38D; color-scheme: dark }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--fundo); color: var(--tinta); font: 400 15px/1.5 var(--corpo); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--marinho); }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ouro); outline-offset: 2px; }
+a { color: var(--li); }
+.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* Barra da marca */
+.topo { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--marinho); color: #F5E9D3; }
+.topo .linha1 { display: flex; align-items: center; gap: 16px; padding-block: 12px; flex-wrap: wrap; }
+.marca { font: 700 24px/1 var(--display); letter-spacing: .01em; }
+.marca small { display: block; font: 600 10px/1.4 var(--corpo); letter-spacing: .22em; text-transform: uppercase; color: #E2B25E; margin-top: 4px; }
+.luzes { display: flex; gap: 10px; margin-left: auto; flex-wrap: wrap; font-size: 12px; color: #B8C3D3; }
+.luz { display: inline-flex; align-items: center; gap: 6px; }
+.luz i { width: 8px; height: 8px; border-radius: 50%; background: #6B7A90; display: inline-block; }
+.luz[data-s="ok"] i { background: #6FD3A0; } .luz[data-s="erro"] i { background: #FF8A80; } .luz[data-s="aviso"] i { background: #F2C46B; }
+.abas { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.abas::-webkit-scrollbar { display: none; }
+.aba { background: none; border: 0; color: #B8C3D3; padding: 10px 14px 12px; font-weight: 600; font-size: 14px; border-bottom: 3px solid transparent; white-space: nowrap; }
+.aba[aria-selected="true"] { color: #F5E9D3; border-bottom-color: #E2B25E; }
+
+main { padding-block: 20px 48px; max-width: 1280px; margin: 0 auto; }
+section[role="tabpanel"] { display: grid; gap: 20px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+h2 { font: 700 26px/1.15 var(--display); }
+h3 { font: 700 15px/1.3 var(--corpo); }
+.rotulo { font: 700 11px/1.3 var(--corpo); letter-spacing: .14em; text-transform: uppercase; color: var(--tinta2); }
+.sub { color: var(--tinta2); font-size: 13px; }
+.cab { display: flex; align-items: end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.painel { background: var(--sup); border: 1px solid var(--linha); border-radius: var(--raio); padding: 18px; min-width: 0; }
+.grade2 { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; }
+@media (max-width: 860px) { .grade2 { grid-template-columns: 1fr; } }
+
+.btn { border: 1px solid var(--linha); background: var(--sup); border-radius: 8px; padding: 8px 14px; font-weight: 600; font-size: 13px; }
+.btn:hover { border-color: var(--ouro); }
+.btn.prim { background: var(--ouro); border-color: var(--ouro); color: var(--marinho); }
+.btn.prim:hover { filter: brightness(1.06); }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn.peq { padding: 5px 10px; font-size: 12px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; font: 700 11px/1 var(--corpo); padding: 5px 8px; border-radius: 99px; background: var(--sup2); color: var(--tinta2); white-space: nowrap; }
+.chip[data-s="PUBLISHED"], .chip[data-s="publicado"], .chip[data-s="feito"], .chip[data-s="aplicada"], .chip[data-s="published"], .chip[data-s="ok"] { background: var(--ok-suave); color: var(--ok); }
+.chip[data-s="PENDING"], .chip[data-s="agendado"], .chip[data-s="scheduled"], .chip[data-s="enviado"], .chip[data-s="em andamento"], .chip[data-s="aprovada"] { background: var(--alerta-suave); color: var(--alerta); }
+.chip[data-s="ERROR"], .chip[data-s="FAILED"], .chip[data-s="erro"], .chip[data-s="error"] { background: var(--erro-suave); color: var(--erro); }
+.rede { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; background: var(--tinta2); }
+.rede[data-r="instagram"] { background: var(--ig); } .rede[data-r="tiktok"] { background: var(--tt); }
+.rede[data-r="youtube"] { background: var(--yt); } .rede[data-r="linkedin"] { background: var(--li); }
+
+/* Hoje */
+.placar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 700px) { .placar { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.num { font: 700 32px/1 var(--display); font-variant-numeric: tabular-nums; }
+.medidor { height: 8px; border-radius: 99px; background: var(--sup2); overflow: hidden; margin-top: 10px; }
+.medidor b { display: block; height: 100%; background: var(--ouro); }
+.medidor[data-cheio="sim"] b { background: var(--erro); }
+.lista { display: grid; gap: 2px; }
+.item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 8px; border-radius: 8px; background: none; border: 0; text-align: left; width: 100%; }
+.item:hover { background: var(--sup2); }
+.item .t { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item .q { font-size: 12px; color: var(--tinta2); font-variant-numeric: tabular-nums; }
+
+/* Pedido ao Claude */
+.pedido textarea { width: 100%; min-height: 96px; resize: vertical; border: 1px solid var(--linha); border-radius: 8px; padding: 12px; background: var(--fundo); }
+.atalhos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.atalho { border: 1px dashed var(--linha); background: none; border-radius: 99px; padding: 5px 10px; font-size: 12px; color: var(--tinta2); }
+.atalho:hover { border-color: var(--ouro); color: var(--tinta); }
+
+/* Calendário */
+.cal-barra { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.cal-barra .periodo { font: 700 20px/1.2 var(--display); min-width: 12ch; }
+.semana { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.dia { background: var(--sup); border: 1px solid var(--linha); border-radius: var(--raio); min-height: 160px; padding: 8px; display: grid; align-content: start; gap: 6px; min-width: 0; }
+.dia[data-hoje="sim"] { border-color: var(--ouro); box-shadow: inset 0 3px 0 var(--ouro); }
+.dia header { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--tinta2); }
+.dia header b { font: 700 18px/1 var(--display); color: var(--tinta); font-variant-numeric: tabular-nums; }
+.post { display: grid; gap: 3px; text-align: left; border: 1px solid var(--linha); border-left: 4px solid var(--tinta2); background: var(--fundo); border-radius: 6px; padding: 6px 7px; font-size: 12px; min-width: 0; }
+.post[data-r="instagram"] { border-left-color: var(--ig); } .post[data-r="tiktok"] { border-left-color: var(--tt); }
+.post[data-r="youtube"] { border-left-color: var(--yt); } .post[data-r="linkedin"] { border-left-color: var(--li); }
+.post .h { display: flex; justify-content: space-between; gap: 4px; color: var(--tinta2); font-variant-numeric: tabular-nums; font-weight: 600; }
+.post .t { font-weight: 600; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; color: var(--tinta); }
+.post[data-s="ERROR"], .post[data-s="erro"] { background: var(--erro-suave); }
+.post:hover { border-color: var(--ouro); }
+.mes { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.mes .dia { min-height: 92px; padding: 6px; gap: 3px; }
+.mes .post { padding: 3px 5px; font-size: 11px; }
+.mes .post .t { -webkit-line-clamp: 1; }
+.mes .vazio { visibility: hidden; }
+.dsem { font: 700 11px/1 var(--corpo); letter-spacing: .1em; text-transform: uppercase; color: var(--tinta2); padding: 4px 6px; }
+@media (max-width: 760px) {
+  .semana { grid-template-columns: 1fr; }
+  .semana .dia { min-height: 0; }
+  .mes, .dsem-linha { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .mes .post .t { display: none; }
+}
+.legenda-redes { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--tinta2); }
+.legenda-redes span { display: inline-flex; gap: 6px; align-items: center; }
+
+/* Gaveta de detalhe */
+.gaveta-fundo { position: fixed; inset: 0; background: rgba(3, 16, 31, .45); z-index: 20; }
+.gaveta { position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 100%); background: var(--sup); z-index: 21; overflow-y: auto;
+  padding: calc(18px + env(safe-area-inset-top, 0px)) max(18px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) 18px;
+  display: grid; gap: 14px; align-content: start; box-shadow: -12px 0 40px rgba(0,0,0,.25); }
+.gaveta img, .gaveta video { width: 100%; border-radius: 8px; background: var(--sup2); }
+.campo { display: grid; gap: 6px; }
+.campo label { font: 700 11px/1.3 var(--corpo); letter-spacing: .12em; text-transform: uppercase; color: var(--tinta2); }
+.campo input, .campo textarea, .campo select { width: 100%; border: 1px solid var(--linha); border-radius: 8px; padding: 9px 11px; background: var(--fundo); }
+.campo textarea { min-height: 150px; resize: vertical; }
+.linha-btn { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.aviso { padding: 10px 12px; border-radius: 8px; background: var(--alerta-suave); color: var(--alerta); font-size: 13px; }
+.aviso.erro { background: var(--erro-suave); color: var(--erro); }
+.aviso.ok { background: var(--ok-suave); color: var(--ok); }
+
+/* Cartões (sugestões, pedidos, conexões) */
+.cartoes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+.cartao { background: var(--sup); border: 1px solid var(--linha); border-radius: var(--raio); padding: 14px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.cartao p { margin: 0; color: var(--tinta2); font-size: 13px; overflow-wrap: anywhere; }
+.cartao .topo-c { display: flex; justify-content: space-between; gap: 8px; align-items: start; }
+.vazio-estado { padding: 28px; text-align: center; color: var(--tinta2); border: 1px dashed var(--linha); border-radius: var(--raio); }
+.saida { white-space: pre-wrap; background: var(--fundo); border: 1px solid var(--linha); border-radius: 8px; padding: 12px; font-size: 14px; min-height: 60px; overflow-wrap: anywhere; }
+.relatorio { max-width: 72ch; overflow-wrap: anywhere; }
+.relatorio table { border-collapse: collapse; font-size: 13px; display: block; overflow-x: auto; }
+.relatorio td, .relatorio th { border: 1px solid var(--linha); padding: 4px 8px; }
+.relatorio h1, .relatorio h2 { font-family: var(--display); margin: 18px 0 8px; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--marinho); color: #F5E9D3; padding: 10px 16px; border-radius: 8px; z-index: 30; font-weight: 600; font-size: 13px; max-width: calc(100% - 32px); }
+@media (prefers-reduced-motion: no-preference) { .gaveta { animation: entra .18s ease-out; } @keyframes entra { from { transform: translateX(24px); opacity: .6; } } }
+</style>
+
+<header class="topo">
+  <div class="linha1 gutter">
+    <div class="marca">Central Angioletti<small>Pessoas · Propósito · Prosperidade</small></div>
+    <div class="luzes" id="luzes" aria-label="Conexões">
+      <span class="luz" data-c="Metricool"><i></i>Metricool</span>
+      <span class="luz" data-c="Typefully"><i></i>LinkedIn</span>
+      <span class="luz" data-c="Drive"><i></i>Drive</span>
+      <span class="luz" data-c="Claude"><i></i>Claude</span>
+      <span class="luz" data-c="Instagram"><i></i>Instagram direto</span>
+    </div>
+  </div>
+  <nav class="abas gutter" role="tablist" aria-label="Seções">
+    <button class="aba" role="tab" id="t-hoje" aria-controls="p-hoje" aria-selected="true">Hoje</button>
+    <button class="aba" role="tab" id="t-calendario" aria-controls="p-calendario" aria-selected="false">Calendário</button>
+    <button class="aba" role="tab" id="t-criar" aria-controls="p-criar" aria-selected="false">Criar</button>
+    <button class="aba" role="tab" id="t-pedidos" aria-controls="p-pedidos" aria-selected="false">Pedidos ao Claude</button>
+    <button class="aba" role="tab" id="t-sugestoes" aria-controls="p-sugestoes" aria-selected="false">Sugestões</button>
+    <button class="aba" role="tab" id="t-whatsapp" aria-controls="p-whatsapp" aria-selected="false">WhatsApp</button>
+    <button class="aba" role="tab" id="t-relatorios" aria-controls="p-relatorios" aria-selected="false">Relatórios</button>
+    <button class="aba" role="tab" id="t-conexoes" aria-controls="p-conexoes" aria-selected="false">Conexões</button>
+  </nav>
+</header>
+
+<main class="gutter">
+  <!-- HOJE -->
+  <section role="tabpanel" id="p-hoje" aria-labelledby="t-hoje">
+    <div class="cab"><div><span class="rotulo" id="hoje-data"></span><h2 id="saudacao">Bom dia, Diogo</h2></div>
+      <button class="btn" id="atualizar">Atualizar tudo</button></div>
+    <div class="placar">
+      <div class="painel"><span class="rotulo">Cota do Metricool no mês</span><div class="num" id="cota-num">–</div><div class="medidor" id="cota-med"><b style="width:0"></b></div><div class="sub" id="cota-sub">Publicações gratuitas: 20 por mês</div></div>
+      <div class="painel"><span class="rotulo">Próximos 7 dias</span><div class="num" id="n-semana">–</div><div class="sub">publicações agendadas em todas as redes</div></div>
+      <div class="painel"><span class="rotulo">Com erro</span><div class="num" id="n-erro">–</div><div class="sub" id="erro-sub">nada falhou</div></div>
+      <div class="painel"><span class="rotulo">Sugestões novas</span><div class="num" id="n-sug">–</div><div class="sub">esperando o seu ok</div></div>
+    </div>
+    <div class="grade2">
+      <div class="painel pedido">
+        <h3>O que você quer que o Claude faça?</h3>
+        <p class="sub">Escreva do seu jeito. O pedido vai para a tarefa operadora, que faz no repositório, no Metricool, no LinkedIn e no Drive, e responde aqui em Pedidos.</p>
+        <textarea id="pedido-hoje" placeholder="Ex.: corta o Mentor Sincerão 6 em dois recortes de 60 segundos e agenda para sábado e terça"></textarea>
+        <div class="atalhos" id="atalhos-hoje"></div>
+        <div class="linha-btn" style="margin-top:12px"><button class="btn prim" id="enviar-hoje">Enviar ao Claude</button><span class="sub" id="pedido-estado"></span></div>
+      </div>
+      <div class="painel">
+        <div class="cab"><h3>Próximas publicações</h3><span class="sub" id="prox-fonte"></span></div>
+        <div class="lista" id="proximas"><div class="vazio-estado">Carregando o Metricool e o LinkedIn…</div></div>
+      </div>
+    </div>
+    <div class="painel" id="alertas-painel" hidden><h3>Precisa da sua atenção</h3><div class="lista" id="alertas"></div></div>
+  </section>
+
+  <!-- CALENDÁRIO -->
+  <section role="tabpanel" id="p-calendario" aria-labelledby="t-calendario" hidden>
+    <div class="cab">
+      <div class="cal-barra"><button class="btn peq" id="cal-ant" aria-label="Período anterior">‹</button><span class="periodo" id="cal-titulo"></span><button class="btn peq" id="cal-prox" aria-label="Próximo período">›</button><button class="btn peq" id="cal-hoje">Hoje</button></div>
+      <div class="cal-barra"><button class="btn peq" id="v-semana" aria-pressed="true">Semana</button><button class="btn peq" id="v-mes" aria-pressed="false">Mês</button></div>
+    </div>
+    <div class="legenda-redes"><span><i class="rede" data-r="instagram"></i>Instagram</span><span><i class="rede" data-r="tiktok"></i>TikTok</span><span><i class="rede" data-r="youtube"></i>YouTube</span><span><i class="rede" data-r="linkedin"></i>LinkedIn</span><span class="sub" id="cal-estado"></span></div>
+    <div id="cal"></div>
+  </section>
+
+  <!-- CRIAR -->
+  <section role="tabpanel" id="p-criar" aria-labelledby="t-criar" hidden>
+    <div class="cab"><div><h2>Criar com o Claude</h2><p class="sub">Escreve título, descrição, versão do TikTok e LinkedIn nas regras da sua marca. Você revisa e manda produzir.</p></div></div>
+    <div class="grade2">
+      <div class="painel" style="display:grid;gap:12px">
+        <div class="campo"><label for="c-quadro">Quadro</label><select id="c-quadro">
+          <option>Lições de Vida</option><option>Radar Cooperativo</option><option>Educação Financeira</option><option>RH e Governança</option><option>Doutor Di</option><option>Mentor Sincerão</option><option>Imersão China</option><option>Post avulso</option></select></div>
+        <div class="campo"><label for="c-tema">Tema ou ideia</label><textarea id="c-tema" style="min-height:110px" placeholder="Ex.: por que o líder que não decide adoece o time"></textarea></div>
+        <div class="linha-btn"><button class="btn prim" id="c-gerar">Escrever com o Claude</button><button class="btn" id="c-parar" hidden>Parar</button><span class="sub" id="c-estado"></span></div>
+      </div>
+      <div class="painel" style="display:grid;gap:12px" id="c-resultado">
+        <div class="vazio-estado" id="c-vazio">O texto aparece aqui: título do vídeo, descrição para Instagram e YouTube, versão curta do TikTok, LinkedIn em português e o resumo em inglês.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PEDIDOS -->
+  <section role="tabpanel" id="p-pedidos" aria-labelledby="t-pedidos" hidden>
+    <div class="cab"><div><h2>Pedidos ao Claude</h2><p class="sub">Tudo que você pediu por aqui, com a resposta da tarefa operadora.</p></div></div>
+    <div class="painel pedido">
+      <textarea id="pedido-texto" placeholder="Ex.: faz a capa do Lições de Vida de segunda com a foto do palco"></textarea>
+      <div class="atalhos" id="atalhos-ped"></div>
+      <div class="linha-btn" style="margin-top:12px"><button class="btn prim" id="enviar-ped">Enviar ao Claude</button><span class="sub" id="ped-estado"></span></div>
+    </div>
+    <div class="cartoes" id="pedidos"><div class="vazio-estado">Nenhum pedido ainda. O primeiro que você enviar aparece aqui com o andamento.</div></div>
+  </section>
+
+  <!-- SUGESTÕES -->
+  <section role="tabpanel" id="p-sugestoes" aria-labelledby="t-sugestoes" hidden>
+    <div class="cab"><div><h2>Sugestões de melhoria</h2><p class="sub">Vêm do relatório semanal, do histórico de publicações e do Claude. Aprovar manda aplicar.</p></div>
+      <button class="btn" id="sug-gerar">Pedir ideias novas ao Claude</button></div>
+    <div class="cartoes" id="sugestoes"><div class="vazio-estado">Sem sugestões abertas. O orquestrador de segunda deixa as novas aqui.</div></div>
+  </section>
+
+  <!-- WHATSAPP -->
+  <section role="tabpanel" id="p-whatsapp" aria-labelledby="t-whatsapp" hidden>
+    <div class="cab"><div><h2>WhatsApp</h2><p class="sub">Mensagens prontas de cada vídeo para o grupo de parceiros. Um toque abre o WhatsApp com o texto; você escolhe o grupo.</p></div></div>
+    <div class="cartoes" id="whats"><div class="vazio-estado">A tarefa de terça deixa aqui uma mensagem para cada vídeo da semana.</div></div>
+  </section>
+
+  <!-- RELATÓRIOS -->
+  <section role="tabpanel" id="p-relatorios" aria-labelledby="t-relatorios" hidden>
+    <div class="cab"><div><h2>Relatórios</h2><p class="sub">Os relatórios do orquestrador, direto da pasta _Relatorios-Redes do seu Drive.</p></div></div>
+    <div class="grade2">
+      <div class="painel"><div class="lista" id="rel-lista"><div class="vazio-estado">Abra esta aba para buscar no Drive.</div></div></div>
+      <div class="painel"><div class="linha-btn"><button class="btn" id="rel-resumir" hidden>Resumir em 5 linhas</button></div><div id="rel-resumo" class="saida" hidden></div><article class="relatorio" id="rel-texto"><p class="sub">Escolha um relatório.</p></article></div>
+    </div>
+  </section>
+
+  <!-- CONEXÕES -->
+  <section role="tabpanel" id="p-conexoes" aria-labelledby="t-conexoes" hidden>
+    <div class="cab"><div><h2>Conexões</h2><p class="sub">O que já está ligado, o que falta e o que pode entrar depois. Tudo gratuito.</p></div></div>
+    <div class="cartoes" id="conexoes"></div>
+    <div class="cab"><div><h2>Tarefas automáticas</h2><p class="sub">As rotinas do Claude que movem o sistema. "Rodar agora" dispara fora do horário.</p></div></div>
+    <div class="cartoes" id="rotinas"><div class="vazio-estado">Abra esta aba para ler as tarefas.</div></div>
+  </section>
+</main>
+
+<div class="gaveta-fundo" id="gav-fundo" hidden></div>
+<aside class="gaveta" id="gaveta" hidden aria-label="Detalhe da publicação"></aside>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+const BRAND = "7048915", TZ = "America/Sao_Paulo", SOCIAL_SET = 342775, PASTA_RELATORIOS = "1xOg5_G2kxR1P8ImMPxzzv51sIgTAnel_";
+const S = { METRICOOL: "Metricool Social Media Management", TYPEFULLY: "Typefully - Social Media Scheduler", DRIVE: "Google Drive", CCR: "Claude Code Remote" };
+const REGRAS = `Você escreve para Diogo Anderson Angioleti (Angioletti Educação Executiva: "Pessoas, Propósito & Prosperidade"), consultor, palestrante e professor de educação financeira comportamental, liderança, RH, governança e cooperativismo.
+Regras da marca: português do Brasil impecável (crase, concordância, regência); títulos em escrita de frase (só a primeira palavra e nomes próprios com maiúscula, nunca Title Case); tom caloroso, direto e humano; poucos emojis (no máximo 2 ou 3); nenhum clichê de IA ("no mundo de hoje", "vale ressaltar", "não é só X, é Y", travessões de efeito); exemplos universais, sem inventar relato pessoal; números só com fonte; sempre uma pergunta ao público e um convite "manda para quem…"; nunca tema batido como bets.`;
+
+const $ = (s, el = document) => el.querySelector(s), $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = (d, o) => new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, ...o }).format(d);
+const isoSP = d => { const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" }).formatToParts(d).map(x => [x.type, x.value])); return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}`; };
+const diaSP = d => isoSP(d).slice(0, 10);
+const deSP = s => new Date(s.length <= 19 ? s + "-03:00" : s);
+let toastT; const toast = m => { const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 3200); };
+const redeNome = { instagram: "Instagram", tiktok: "TikTok", youtube: "YouTube", linkedin: "LinkedIn" };
+const statusNome = { PUBLISHED: "publicado", PENDING: "agendado", ERROR: "erro", FAILED: "erro", scheduled: "agendado", published: "publicado", draft: "rascunho", planned: "planejado", error: "erro", publishing: "publicando" };
+
+const estado = { posts: [], typefully: [], fila: [], config: {}, ancora: new Date(), vista: "semana", carregado: {} };
+let mcp = null, db = null, sample = null, usuario = null;
+
+/* ---------- Abas ---------- */
+function abrirAba(id) {
+  $$(".aba").forEach(a => a.setAttribute("aria-selected", a.id === "t-" + id));
+  $$("section[role=tabpanel]").forEach(p => p.hidden = p.id !== "p-" + id);
+  try { localStorage.setItem("central-aba", id); } catch {}
+  if (id === "relatorios") carregarRelatorios();
+  if (id === "conexoes") { desenharConexoes(); carregarRotinas(); }
+  if (id === "calendario") desenharCalendario();
+}
+$$(".aba").forEach(a => a.onclick = () => abrirAba(a.id.slice(2)));
+
+/* ---------- Erros de conector, com a correção certa ---------- */
+function msgErro(e, servidor) {
+  const n = { [S.METRICOOL]: "Metricool", [S.TYPEFULLY]: "Typefully", [S.DRIVE]: "Google Drive", [S.CCR]: "Claude Code Remote" }[servidor] || servidor;
+  switch (e?.code) {
+    case "needs_reauth": return `Reconecte o ${n} em claude.ai → Configurações → Conectores.`;
+    case "server_not_connected": case "selection_required": return `Adicione o ${n} em claude.ai → Configurações → Conectores.`;
+    case "not_in_manifest": case "approval_required": case "consent_required": return `A Central ainda não tem sua permissão para usar o ${n}. Abra o menu de permissões do artifact.`;
+    case "not_granted": case "capability_disabled": return "Esta visualização não permite conectores. Abra a Central no claude.ai.";
+    case "server_unavailable": return `O ${n} não respondeu agora. Tente de novo em instantes.`;
+    case "tool_error": return `O ${n} recusou: ${String(e.message || "").slice(0, 220)}`;
+    default: return `Falha no ${n}: ${String(e?.message || e).slice(0, 220)}`;
+  }
+}
+function luz(nome, s) { const l = $(`.luz[data-c="${nome}"]`); if (l) l.dataset.s = s; }
+async function chamar(servidor, ferramenta, entrada, opts) {
+  if (!mcp) throw { code: "not_granted", message: "sem conectores" };
+  const r = await mcp.callTool(servidor, ferramenta, entrada, opts);
+  return r.payload;
+}
+
+/* ---------- Dados: Metricool, Typefully, fila própria ---------- */
+function intervalo() {
+  const a = new Date(estado.ancora);
+  const ini = new Date(a.getFullYear(), a.getMonth(), 1), fim = new Date(a.getFullYear(), a.getMonth() + 1, 0);
+  ini.setDate(ini.getDate() - 7); fim.setDate(fim.getDate() + 8);
+  return [diaSP(ini), diaSP(fim)];
+}
+function normalizarMetricool(p) {
+  const pr = (p.providers || [])[0] || {};
+  return { fonte: "metricool", id: p.id, uuid: p.uuid, quando: deSP(p.publicationDate?.dateTime || ""), rede: pr.network, status: pr.status || (p.draft ? "rascunho" : "PENDING"),
+    detalhe: pr.detailedStatus, link: pr.publicUrl, texto: p.text || "", titulo: p.youtubeData?.title || p.tiktokData?.title || "",
+    tipo: p.instagramData?.type && pr.network === "instagram" ? p.instagramData.type : (p.youtubeData?.type || (pr.network === "tiktok" ? "vídeo" : "")),
+    midia: (p.media || [])[0], capa: p.videoThumbnailUrl, bruto: p };
+}
+async function carregarMetricool(forcar) {
+  const [de, ate] = intervalo();
+  const chave = de + ate;
+  if (!forcar && estado.carregado.metricool === chave) return;
+  $("#cal-estado").textContent = "Lendo o Metricool…";
+  try {
+    const r = await chamar(S.METRICOOL, "getScheduledPosts", { brandId: BRAND, fromDate: de + "T00:00:00-03:00", toDate: ate + "T23:59:59-03:00", timezone: TZ, extendedRange: false }, { cache: false });
+    estado.posts = (r?.data || []).map(normalizarMetricool).filter(p => !isNaN(p.quando));
+    estado.carregado.metricool = chave; luz("Metricool", "ok"); estado.erroMetricool = null;
+    $("#cal-estado").textContent = "";
+  } catch (e) { luz("Metricool", "erro"); estado.erroMetricool = msgErro(e, S.METRICOOL); $("#cal-estado").textContent = estado.erroMetricool; }
+}
+async function carregarTypefully() {
+  try {
+    const r = await chamar(S.TYPEFULLY, "list_drafts", { social_set_id: SOCIAL_SET, limit: 50, order_by: "-updated_at" }, { cache: false });
+    estado.typefully = (r?.results || []).filter(d => d.linkedin_post_enabled && (d.scheduled_date || d.published_at)).map(d => ({
+      fonte: "typefully", id: d.id, quando: new Date(d.published_at || d.scheduled_date), rede: "linkedin", status: d.status,
+      texto: d.preview || "", titulo: d.draft_title || "", link: d.linkedin_published_url || d.private_url, privado: d.private_url }));
+    luz("Typefully", "ok");
+  } catch (e) { luz("Typefully", "erro"); estado.erroTypefully = msgErro(e, S.TYPEFULLY); }
+}
+function todos() { return [...estado.posts, ...estado.typefully, ...estado.fila].sort((a, b) => a.quando - b.quando); }
+
+/* ---------- Hoje ---------- */
+function desenharHoje() {
+  const agora = new Date();
+  $("#hoje-data").textContent = fmt(agora, { weekday: "long", day: "numeric", month: "long" });
+  const h = Number(fmt(agora, { hour: "numeric", hourCycle: "h23" }));
+  $("#saudacao").textContent = (h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite") + ", Diogo";
+  const mesAtual = diaSP(agora).slice(0, 7);
+  const doMes = estado.posts.filter(p => diaSP(p.quando).slice(0, 7) === mesAtual && p.status !== "rascunho");
+  const publicadas = doMes.filter(p => p.status === "PUBLISHED").length, total = doMes.length;
+  if (estado.carregado.metricool) {
+    $("#cota-num").textContent = `${total} de 20`;
+    const m = $("#cota-med"); m.dataset.cheio = total >= 20 ? "sim" : "nao"; m.firstElementChild.style.width = Math.min(100, total * 5) + "%";
+    $("#cota-sub").textContent = `${publicadas} já publicadas e ${total - publicadas} agendadas em ${fmt(agora, { month: "long" })}`;
+  } else if (estado.erroMetricool) { $("#cota-num").textContent = "–"; $("#cota-sub").textContent = estado.erroMetricool; }
+  const em7 = new Date(agora.getTime() + 7 * 864e5);
+  const prox = todos().filter(p => p.quando >= agora && p.quando <= em7 && !["PUBLISHED", "published"].includes(p.status));
+  $("#n-semana").textContent = estado.carregado.metricool ? prox.length : "–";
+  const erros = todos().filter(p => ["ERROR", "FAILED", "erro", "error"].includes(p.status));
+  $("#n-erro").textContent = estado.carregado.metricool ? erros.length : "–";
+  $("#erro-sub").textContent = erros.length ? "toque para ver e corrigir" : "nada falhou";
+  $("#prox-fonte").textContent = estado.erroTypefully ? "LinkedIn indisponível" : "";
+  const lista = $("#proximas");
+  if (!estado.carregado.metricool && !estado.erroMetricool) return;
+  lista.innerHTML = prox.length ? "" : `<div class="vazio-estado">${estado.erroMetricool ? esc(estado.erroMetricool) : "Nada agendado nos próximos 7 dias."}</div>`;
+  prox.slice(0, 8).forEach(p => lista.append(itemPost(p)));
+  const al = $("#alertas"); al.innerHTML = ""; erros.forEach(p => al.append(itemPost(p)));
+  (estado.alertas || []).forEach(a => { const d = document.createElement("div"); d.className = "aviso"; d.textContent = a; al.append(d); });
+  $("#alertas-painel").hidden = !al.children.length;
+}
+function itemPost(p) {
+  const b = document.createElement("button"); b.className = "item";
+  b.innerHTML = `<i class="rede" data-r="${esc(p.rede)}"></i><div style="min-width:0"><div class="t">${esc(p.titulo || p.texto.split("\n")[0] || "(sem texto)")}</div><div class="q">${esc(fmt(p.quando, { weekday: "short", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }))} · ${esc(redeNome[p.rede] || p.rede)}${p.tipo ? " · " + esc(String(p.tipo).toLowerCase()) : ""}</div></div><span class="chip" data-s="${esc(p.status)}">${esc(statusNome[p.status] || p.status)}</span>`;
+  b.onclick = () => abrirPost(p); return b;
+}
+
+/* ---------- Calendário ---------- */
+function inicioSemana(d) { const x = new Date(d); x.setHours(12, 0, 0, 0); const w = (x.getDay() + 6) % 7; x.setDate(x.getDate() - w); return x; }
+function desenharCalendario() {
+  const cal = $("#cal"), hoje = diaSP(new Date());
+  const porDia = {}; todos().forEach(p => (porDia[diaSP(p.quando)] ||= []).push(p));
+  const blocoDia = (d, extra = "") => {
+    const k = diaSP(d), el = document.createElement("div"); el.className = "dia " + extra; el.dataset.hoje = k === hoje ? "sim" : "nao";
+    el.innerHTML = `<header><span>${esc(fmt(d, { weekday: "short" }))}</span><b>${d.getDate()}</b></header>`;
+    (porDia[k] || []).forEach(p => {
+      const b = document.createElement("button"); b.className = "post"; b.dataset.r = p.rede; b.dataset.s = p.status;
+      b.innerHTML = `<span class="h"><span>${esc(fmt(p.quando, { hour: "2-digit", minute: "2-digit" }))} ${esc(redeNome[p.rede] || p.rede)}</span><span class="chip" data-s="${esc(p.status)}" style="padding:2px 6px">${esc(statusNome[p.status] || p.status)}</span></span><span class="t">${esc(p.titulo || p.texto.split("\n")[0] || String(p.tipo || ""))}</span>`;
+      b.onclick = () => abrirPost(p); el.append(b);
+    });
+    return el;
+  };
+  cal.innerHTML = "";
+  if (estado.vista === "semana") {
+    const ini = inicioSemana(estado.ancora), fim = new Date(ini); fim.setDate(ini.getDate() + 6);
+    $("#cal-titulo").textContent = `${fmt(ini, { day: "numeric", month: "short" })} a ${fmt(fim, { day: "numeric", month: "short" })}`;
+    const g = document.createElement("div"); g.className = "semana";
+    for (let i = 0; i < 7; i++) { const d = new Date(ini); d.setDate(ini.getDate() + i); g.append(blocoDia(d)); }
+    cal.append(g);
+  } else {
+    const a = estado.ancora, p1 = new Date(a.getFullYear(), a.getMonth(), 1, 12);
+    $("#cal-titulo").textContent = fmt(p1, { month: "long", year: "numeric" });
+    const g = document.createElement("div"); g.className = "mes";
+    ["seg", "ter", "qua", "qui", "sex", "sáb", "dom"].forEach(n => { const h = document.createElement("div"); h.className = "dsem"; h.textContent = n; g.append(h); });
+    for (let i = 0; i < (p1.getDay() + 6) % 7; i++) { const v = document.createElement("div"); v.className = "dia vazio"; g.append(v); }
+    const nd = new Date(a.getFullYear(), a.getMonth() + 1, 0).getDate();
+    for (let i = 1; i <= nd; i++) g.append(blocoDia(new Date(a.getFullYear(), a.getMonth(), i, 12)));
+    cal.append(g);
+  }
+}
+const mover = n => { const a = new Date(estado.ancora); estado.vista === "semana" ? a.setDate(a.getDate() + 7 * n) : a.setMonth(a.getMonth() + n, 1); estado.ancora = a; recarregar(); };
+$("#cal-ant").onclick = () => mover(-1); $("#cal-prox").onclick = () => mover(1);
+$("#cal-hoje").onclick = () => { estado.ancora = new Date(); recarregar(); };
+$("#v-semana").onclick = () => { estado.vista = "semana"; $("#v-semana").setAttribute("aria-pressed", "true"); $("#v-mes").setAttribute("aria-pressed", "false"); desenharCalendario(); };
+$("#v-mes").onclick = () => { estado.vista = "mes"; $("#v-mes").setAttribute("aria-pressed", "true"); $("#v-semana").setAttribute("aria-pressed", "false"); desenharCalendario(); };
+
+/* ---------- Gaveta: ver, melhorar com o Claude e salvar ---------- */
+function fecharGaveta() { $("#gaveta").hidden = true; $("#gav-fundo").hidden = true; }
+$("#gav-fundo").onclick = fecharGaveta;
+document.addEventListener("keydown", e => { if (e.key === "Escape") fecharGaveta(); });
+function abrirPost(p) {
+  const g = $("#gaveta"), editavel = p.fonte === "metricool" && p.status === "PENDING";
+  const ehVideo = /\.(mp4|mov)(\?|$)/i.test(p.midia || "");
+  const [data, hora] = isoSP(p.quando).split("T");
+  g.innerHTML = `<div class="cab"><div><span class="rotulo">${esc(redeNome[p.rede] || p.rede)}${p.tipo ? " · " + esc(String(p.tipo).toLowerCase()) : ""}</span><h2 style="font-size:22px">${esc(p.titulo || "Publicação")}</h2></div><button class="btn peq" id="g-fechar">Fechar</button></div>
+    <div class="linha-btn"><span class="chip" data-s="${esc(p.status)}">${esc(statusNome[p.status] || p.status)}</span><span class="sub">${esc(fmt(p.quando, { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }))}</span>${p.link ? `<a href="${esc(p.link)}" target="_blank" rel="noopener">abrir ↗</a>` : ""}</div>
+    ${p.detalhe && p.status !== "PUBLISHED" && p.status !== "PENDING" ? `<div class="aviso erro">${esc(p.detalhe)}</div>` : ""}
+    ${p.capa ? `<img src="${esc(p.capa)}" alt="Capa">` : (p.midia && !ehVideo ? `<img src="${esc(p.midia)}" alt="Imagem">` : "")}
+    ${p.titulo && editavel && ["youtube", "tiktok"].includes(p.rede) ? `<div class="campo"><label for="g-titulo">Título</label><input id="g-titulo" value="${esc(p.titulo)}"></div>` : ""}
+    <div class="campo"><label for="g-texto">${p.rede === "linkedin" ? "Início do texto" : "Texto"}</label><textarea id="g-texto" ${editavel ? "" : "readonly"}>${esc(p.texto)}</textarea></div>
+    ${editavel && p.rede === "instagram" ? `<div class="campo"><label for="g-coment">Primeiro comentário</label><textarea id="g-coment" style="min-height:70px">${esc(p.bruto.firstCommentText || "")}</textarea></div>` : ""}
+    ${editavel ? `<div class="linha-btn"><div class="campo"><label for="g-data">Dia</label><input type="date" id="g-data" value="${data}"></div><div class="campo"><label for="g-hora">Hora</label><input type="time" id="g-hora" value="${hora.slice(0, 5)}"></div></div>` : ""}
+    <div class="linha-btn">
+      ${sample && editavel ? `<button class="btn" id="g-melhorar">Melhorar o texto com o Claude</button>` : ""}
+      ${editavel ? `<button class="btn prim" id="g-salvar">Salvar no Metricool</button>` : ""}
+      ${p.fonte === "typefully" ? `<a class="btn" href="${esc(p.privado)}" target="_blank" rel="noopener">Abrir no Typefully ↗</a>` : ""}
+      <button class="btn" id="g-pedir">Pedir ajuste ao Claude</button>
+    </div>
+    <div id="g-msg"></div>`;
+  g.hidden = false; $("#gav-fundo").hidden = false; $("#g-fechar").focus();
+  $("#g-fechar").onclick = fecharGaveta;
+  $("#g-pedir").onclick = () => { fecharGaveta(); abrirAba("pedidos"); $("#pedido-texto").value = `Sobre a publicação de ${fmt(p.quando, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })} no ${redeNome[p.rede] || p.rede} ("${(p.titulo || p.texto).slice(0, 80)}", id ${p.id}): `; $("#pedido-texto").focus(); };
+  const melhorar = $("#g-melhorar");
+  if (melhorar) melhorar.onclick = async () => {
+    const ta = $("#g-texto"), antes = ta.value; melhorar.disabled = true; $("#g-msg").innerHTML = `<p class="sub">O Claude está reescrevendo…</p>`;
+    try {
+      const { text } = await sample(`${REGRAS}\n\nReescreva a legenda abaixo para ${redeNome[p.rede]} mantendo os fatos, os links e as hashtags que fizerem sentido. ${p.rede === "tiktok" ? "Máximo 300 caracteres." : ""} Responda só com a legenda nova.\n\nLegenda atual:\n${antes}`, { cache: false, onText: ({ text }) => { ta.value = text; } });
+      ta.value = text; $("#g-msg").innerHTML = `<div class="aviso">Revise e toque em "Salvar no Metricool" para valer. <button class="btn peq" id="g-desfazer">Desfazer</button></div>`;
+      $("#g-desfazer").onclick = () => { ta.value = antes; $("#g-msg").innerHTML = ""; };
+    } catch (e) { ta.value = e.text || antes; $("#g-msg").innerHTML = `<div class="aviso erro">${esc(e.code === "not_granted" ? "O uso do Claude não foi permitido nesta página." : e.code === "rate_limited" ? "Muitos pedidos seguidos. Tente daqui a pouco." : "O Claude não conseguiu responder agora.")}</div>`; }
+    melhorar.disabled = false;
+  };
+  const salvar = $("#g-salvar");
+  if (salvar) salvar.onclick = () => {
+    $("#g-msg").innerHTML = `<div class="aviso">Isso muda o post agendado no Metricool agora. <button class="btn peq prim" id="g-confirma">Confirmar</button> <button class="btn peq" id="g-cancela">Cancelar</button></div>`;
+    $("#g-cancela").onclick = () => $("#g-msg").innerHTML = "";
+    $("#g-confirma").onclick = async () => {
+      const b = p.bruto, rede = p.rede;
+      const info = { autoPublish: b.autoPublish !== false, descendants: [], draft: !!b.draft, firstCommentText: $("#g-coment") ? $("#g-coment").value : (b.firstCommentText || ""),
+        hasNotReadNotes: false, media: b.media || [], mediaAltText: [], providers: [{ network: rede }],
+        publicationDate: { dateTime: `${$("#g-data").value}T${$("#g-hora").value}:00`, timezone: TZ }, shortener: false, smartLinkData: { ids: [] }, text: $("#g-texto").value };
+      if (b.videoThumbnailUrl && rede !== "instagram" || (b.videoThumbnailUrl && b.instagramData?.type === "REEL")) info.videoThumbnailUrl = b.videoThumbnailUrl;
+      if (rede === "instagram") { const ig = { ...b.instagramData }; delete ig.autoPublish; info.instagramData = ig; if (ig.type === "STORY") delete info.text; }
+      if (rede === "tiktok") info.tiktokData = { ...b.tiktokData, ...($("#g-titulo") ? { title: $("#g-titulo").value } : {}) };
+      if (rede === "youtube") info.youtubeData = { ...b.youtubeData, ...($("#g-titulo") ? { title: $("#g-titulo").value } : {}) };
+      $("#g-msg").innerHTML = `<p class="sub">Salvando…</p>`;
+      try {
+        await chamar(S.METRICOOL, "updateScheduledPost", { blogId: BRAND, id: String(p.id), uuid: String(p.uuid), info: JSON.stringify(info) });
+        toast("Salvo no Metricool"); fecharGaveta(); await carregarMetricool(true); desenharTudo();
+      } catch (e) { $("#g-msg").innerHTML = `<div class="aviso erro">${esc(msgErro(e, S.METRICOOL))} Recarregue antes de tentar de novo: o Metricool pode ter salvo.</div>`; }
+    };
+  };
+}
+
+/* ---------- Pedidos ao Claude ---------- */
+const ATALHOS = [
+  "Faz a capa do vídeo de ", "Corta o vídeo do Drive \"…\" em recortes de 60 a 90 segundos e agenda", "Reescreve a legenda de ",
+  "Monta a semana que vem com o que está na pasta Videos-da-semana", "Analisa o desempenho dos últimos 30 dias e me diz o que mudar",
+  "Promove um episódio antigo do Doutor Di nos Stories de ", "Cria um carrossel para o LinkedIn sobre "];
+function desenharAtalhos(alvo, caixa) { const el = $(alvo); ATALHOS.forEach(a => { const b = document.createElement("button"); b.className = "atalho"; b.textContent = a.replace(/ $/, "…"); b.onclick = () => { const t = $(caixa); t.value = a; t.focus(); }; el.append(b); }); }
+desenharAtalhos("#atalhos-hoje", "#pedido-hoje"); desenharAtalhos("#atalhos-ped", "#pedido-texto");
+async function enviarPedido(texto, origem, saida) {
+  texto = texto.trim(); if (!texto) { saida.textContent = "Escreva o pedido primeiro."; return false; }
+  if (!db) { saida.textContent = "Sem acesso ao banco da Central nesta visualização."; return false; }
+  saida.textContent = "Registrando…";
+  let ref;
+  try { ref = await db.collection("pedidos").add({ texto, origem, status: "enviado", criadoEm: new Date().toISOString(), resposta: "" }); }
+  catch (e) { saida.textContent = "Não foi possível registrar o pedido (" + (e.code || "erro") + ")."; return false; }
+  const gatilho = estado.config.operador;
+  if (!gatilho) { await ref.update({ status: "erro", resposta: "A tarefa operadora ainda não está configurada." }); saida.textContent = "Pedido salvo, mas a tarefa operadora não está configurada."; return true; }
+  try {
+    await chamar(S.CCR, "fire_trigger", { trigger_id: gatilho, text: `Pedido ${ref.id} feito na Central (${origem}):\n${texto}` });
+    saida.textContent = "Enviado. Acompanhe em Pedidos ao Claude."; toast("Pedido enviado ao Claude");
+  } catch (e) {
+    await ref.update({ status: "erro", resposta: msgErro(e, S.CCR) }).catch(() => {});
+    saida.textContent = msgErro(e, S.CCR);
+  }
+  return true;
+}
+$("#enviar-hoje").onclick = async () => { const b = $("#enviar-hoje"); b.disabled = true; if (await enviarPedido($("#pedido-hoje").value, "Hoje", $("#pedido-estado"))) $("#pedido-hoje").value = ""; b.disabled = false; };
+$("#enviar-ped").onclick = async () => { const b = $("#enviar-ped"); b.disabled = true; if (await enviarPedido($("#pedido-texto").value, "Pedidos", $("#ped-estado"))) $("#pedido-texto").value = ""; b.disabled = false; };
+function desenharPedidos(docs) {
+  const el = $("#pedidos");
+  if (!docs.length) { el.innerHTML = `<div class="vazio-estado">Nenhum pedido ainda. O primeiro que você enviar aparece aqui com o andamento.</div>`; return; }
+  el.innerHTML = "";
+  docs.forEach(d => { const x = d.data(); const c = document.createElement("div"); c.className = "cartao";
+    c.innerHTML = `<div class="topo-c"><span class="sub">${esc(x.criadoEm ? fmt(new Date(x.criadoEm), { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "")}</span><span class="chip" data-s="${esc(x.status)}">${esc(x.status)}</span></div><h3>${esc(x.texto)}</h3>${x.resposta ? `<p>${esc(x.resposta)}</p>` : ""}${x.link ? `<a href="${esc(x.link)}" target="_blank" rel="noopener">ver resultado ↗</a>` : ""}`;
+    el.append(c); });
+}
+
+/* ---------- Sugestões ---------- */
+function desenharSugestoes(docs) {
+  const abertas = docs.filter(d => ["nova", "aprovada"].includes(d.data().status));
+  $("#n-sug").textContent = docs.filter(d => d.data().status === "nova").length;
+  const el = $("#sugestoes");
+  if (!docs.length) { el.innerHTML = `<div class="vazio-estado">Sem sugestões abertas. O orquestrador de segunda deixa as novas aqui.</div>`; return; }
+  el.innerHTML = "";
+  [...abertas, ...docs.filter(d => !abertas.includes(d))].slice(0, 40).forEach(d => {
+    const x = d.data(), c = document.createElement("div"); c.className = "cartao";
+    c.innerHTML = `<div class="topo-c"><span class="rotulo">${esc(x.origem || "")}</span><span class="chip" data-s="${esc(x.status)}">${esc(x.status)}</span></div><h3>${esc(x.titulo)}</h3><p>${esc(x.porque || "")}</p>${x.acao ? `<p><b>O que muda:</b> ${esc(x.acao)}</p>` : ""}`;
+    if (x.status === "nova") {
+      const l = document.createElement("div"); l.className = "linha-btn";
+      const ok = document.createElement("button"); ok.className = "btn prim peq"; ok.textContent = "Aprovar e aplicar";
+      const nao = document.createElement("button"); nao.className = "btn peq"; nao.textContent = "Recusar";
+      ok.onclick = async () => { ok.disabled = true;
+        await db.doc("sugestoes/" + d.id).update({ status: "aprovada", decididaEm: new Date().toISOString() });
+        await enviarPedido(`Aplicar a sugestão aprovada ${d.id}: ${x.titulo}. ${x.acao || ""}`, "Sugestões", { set textContent(v) { toast(v); } }); };
+      nao.onclick = async () => { nao.disabled = true; await db.doc("sugestoes/" + d.id).update({ status: "recusada", decididaEm: new Date().toISOString() }); };
+      l.append(ok, nao); c.append(l);
+    }
+    el.append(c);
+  });
+}
+$("#sug-gerar").onclick = async () => {
+  const b = $("#sug-gerar");
+  if (!sample) { toast("O Claude não está disponível nesta visualização."); return; }
+  b.disabled = true; b.textContent = "O Claude está analisando…";
+  const resumo = todos().slice(-60).map(p => `${diaSP(p.quando)} ${p.rede} ${statusNome[p.status] || p.status}: ${(p.titulo || p.texto).slice(0, 90).replace(/\n/g, " ")}`).join("\n");
+  try {
+    const lista = await sample.json(`${REGRAS}\n\nVocê é o estrategista de redes do Diogo. Abaixo está o calendário recente (data, rede, situação, título). Proponha de 3 a 5 melhorias concretas e gratuitas para crescer seguidores qualificados e gerar demanda de palestras e consultoria: formato, horário, tema, série, collab, reaproveitamento, automação. Nada que repita o que já existe no calendário.\nResponda só com um array JSON de objetos {"titulo": string curto, "porque": string com o dado ou o raciocínio, "acao": string com o que mudar na prática}.\n\nCalendário:\n${resumo || "(sem publicações carregadas)"}`, { modelTier: "default", cache: false });
+    for (const s of (Array.isArray(lista) ? lista : []).slice(0, 5)) await db.collection("sugestoes").add({ titulo: String(s.titulo || ""), porque: String(s.porque || ""), acao: String(s.acao || ""), origem: "Claude, na Central", status: "nova", criadaEm: new Date().toISOString() });
+    toast("Sugestões novas adicionadas");
+  } catch (e) { toast(e.code === "not_granted" ? "O uso do Claude não foi permitido nesta página." : "O Claude não conseguiu gerar agora."); }
+  b.disabled = false; b.textContent = "Pedir ideias novas ao Claude";
+};
+
+/* ---------- Criar ---------- */
+let ctlCriar;
+$("#c-parar").onclick = () => ctlCriar?.abort();
+$("#c-gerar").onclick = async () => {
+  const tema = $("#c-tema").value.trim(), quadro = $("#c-quadro").value;
+  if (!tema) { $("#c-estado").textContent = "Escreva o tema primeiro."; return; }
+  if (!sample) { $("#c-estado").textContent = "O Claude não está disponível nesta visualização."; return; }
+  ctlCriar = new AbortController(); $("#c-gerar").disabled = true; $("#c-parar").hidden = false; $("#c-estado").textContent = "O Claude está escrevendo…";
+  const semLinkedin = quadro === "Doutor Di";
+  try {
+    const r = await sample.json(`${REGRAS}\n\nQuadro: ${quadro}. Tema: ${tema}.\n${quadro === "Doutor Di" ? 'Título começa com "Ep. NN - ". Humor leve, personagem fictício, sem LinkedIn.' : ""}${quadro === "Lições de Vida" ? "Traga inteligência e poesia: um conto, uma passagem bíblica, um filósofo ou um conhecimento curioso, ligado a uma pesquisa atual." : ""}\nResponda só com um objeto JSON: {"titulo": título do vídeo e do YouTube, em escrita de frase, até 70 caracteres; "descricao": descrição única para Instagram e YouTube, 3 a 5 parágrafos curtos, pergunta ao público, convite "manda para quem…" e 4 a 6 hashtags no fim; "tiktok": versão curta até 300 caracteres; "capa": texto curto para a capa, até 6 palavras; "linkedin_pt": ${semLinkedin ? '""' : "post de LinkedIn em português, primeira linha como título, 2 a 4 emojis no total, pergunta final"}; "linkedin_en": ${semLinkedin ? '""' : "resumo em inglês de 3 a 4 frases"}}`, { signal: ctlCriar.signal, cache: false });
+    desenharCriado(r, quadro, tema); $("#c-estado").textContent = "";
+  } catch (e) { $("#c-estado").textContent = e.code === "cancelled" ? "" : e.code === "invalid_json" ? "O Claude respondeu fora do formato. Toque de novo." : e.code === "not_granted" ? "O uso do Claude não foi permitido nesta página." : "O Claude não conseguiu escrever agora."; }
+  $("#c-gerar").disabled = false; $("#c-parar").hidden = true;
+};
+function desenharCriado(r, quadro, tema) {
+  const el = $("#c-resultado"); el.innerHTML = "";
+  const campos = [["titulo", "Título do vídeo e do YouTube"], ["capa", "Texto da capa"], ["descricao", "Descrição (Instagram e YouTube)"], ["tiktok", "TikTok"], ["linkedin_pt", "LinkedIn"], ["linkedin_en", "Resumo em inglês"]];
+  campos.forEach(([k, rot]) => { if (!r?.[k]) return; const c = document.createElement("div"); c.className = "campo";
+    c.innerHTML = `<label for="cr-${k}">${rot}</label><textarea id="cr-${k}" style="min-height:${k === "titulo" || k === "capa" ? 52 : 130}px">${esc(r[k])}</textarea>`; el.append(c); });
+  const l = document.createElement("div"); l.className = "linha-btn";
+  l.innerHTML = `<button class="btn prim" id="cr-produzir">Mandar o Claude produzir e agendar</button><button class="btn" id="cr-copiar">Copiar tudo</button><span class="sub" id="cr-estado"></span>`;
+  el.append(l);
+  const tudo = () => campos.filter(([k]) => $("#cr-" + k)).map(([k, rot]) => `${rot}:\n${$("#cr-" + k).value}`).join("\n\n");
+  $("#cr-copiar").onclick = async () => { try { await navigator.clipboard.writeText(tudo()); toast("Copiado"); } catch { toast("Selecione o texto e copie."); } };
+  $("#cr-produzir").onclick = () => enviarPedido(`Produzir e agendar ${quadro} (tema: ${tema}). Use exatamente estes textos, faça a capa com a minha foto e agende nas redes do quadro quando o vídeo estiver na pasta Videos-da-semana:\n\n${tudo()}`, "Criar", $("#cr-estado"));
+}
+
+/* ---------- WhatsApp ---------- */
+function desenharWhats(docs) {
+  const el = $("#whats");
+  if (!docs.length) { el.innerHTML = `<div class="vazio-estado">A tarefa de terça deixa aqui uma mensagem para cada vídeo da semana.</div>`; return; }
+  el.innerHTML = "";
+  docs.forEach(d => { const x = d.data(), c = document.createElement("div"); c.className = "cartao";
+    c.innerHTML = `<span class="rotulo">${esc(x.data || "")}</span><h3>${esc(x.titulo || "")}</h3><div class="saida">${esc(x.mensagem || "")}</div>
+      <div class="linha-btn"><a class="btn prim" href="https://wa.me/?text=${encodeURIComponent(x.mensagem || "")}" target="_blank" rel="noopener">Abrir no WhatsApp</a><button class="btn">Copiar</button></div>`;
+    c.querySelector("button").onclick = async () => { try { await navigator.clipboard.writeText(x.mensagem || ""); toast("Copiado"); } catch { toast("Selecione o texto e copie."); } };
+    el.append(c); });
+}
+
+/* ---------- Relatórios ---------- */
+async function carregarRelatorios() {
+  if (estado.carregado.rel) return; estado.carregado.rel = true;
+  const el = $("#rel-lista"); el.innerHTML = `<p class="sub">Buscando no Drive…</p>`;
+  try {
+    const r = await chamar(S.DRIVE, "search_files", { query: `parentId = '${PASTA_RELATORIOS}'`, excludeContentSnippets: true, pageSize: 30 });
+    const arqs = (r?.files || []).sort((a, b) => (b.title || "").localeCompare(a.title || ""));
+    luz("Drive", "ok"); el.innerHTML = arqs.length ? "" : `<div class="vazio-estado">A pasta está vazia.</div>`;
+    arqs.forEach(f => { const b = document.createElement("button"); b.className = "item"; b.innerHTML = `<span class="rotulo">MD</span><div style="min-width:0"><div class="t">${esc(f.title)}</div><div class="q">${esc(f.modifiedTime ? fmt(new Date(f.modifiedTime), { day: "2-digit", month: "2-digit", year: "numeric" }) : "")}</div></div><span></span>`;
+      b.onclick = () => abrirRelatorio(f); el.append(b); });
+  } catch (e) { luz("Drive", "erro"); el.innerHTML = `<div class="aviso erro">${esc(msgErro(e, S.DRIVE))}</div>`; estado.carregado.rel = false; }
+}
+let textoRelatorio = "";
+async function abrirRelatorio(f) {
+  const art = $("#rel-texto"); art.innerHTML = `<p class="sub">Abrindo ${esc(f.title)}…</p>`; $("#rel-resumo").hidden = true;
+  try {
+    const r = await chamar(S.DRIVE, "read_file_content", { fileId: f.id });
+    textoRelatorio = String(r?.fileContent || "").replace(/\\([#*_`\-\[\]|>.!])/g, "$1");
+    art.innerHTML = window.marked && window.DOMPurify ? DOMPurify.sanitize(marked.parse(textoRelatorio)) : `<pre style="white-space:pre-wrap">${esc(textoRelatorio)}</pre>`;
+    $("#rel-resumir").hidden = !sample;
+  } catch (e) { art.innerHTML = `<div class="aviso erro">${esc(msgErro(e, S.DRIVE))}</div>`; }
+}
+$("#rel-resumir").onclick = async () => {
+  const o = $("#rel-resumo"); o.hidden = false; o.textContent = "O Claude está lendo…";
+  try { const { text } = await sample(`${REGRAS}\n\nResuma este relatório de redes sociais em 5 linhas curtas para o Diogo ler no celular: o placar, o que deu certo, o que corrigir e a ação mais importante da semana.\n\n${textoRelatorio.slice(0, 60000)}`, { cache: { gcTime: 864e5 }, onText: ({ text }) => o.textContent = text }); o.textContent = text; }
+  catch (e) { o.textContent = e.text || "O Claude não conseguiu resumir agora."; }
+};
+
+/* ---------- Conexões e rotinas ---------- */
+const CONEXOES = [
+  { nome: "Metricool", luz: "Metricool", faz: "Agenda e publica TikTok e YouTube (e o Instagram até a publicação direta ser ligada). Plano gratuito: 20 publicações por mês.", custo: "grátis" },
+  { nome: "LinkedIn pelo Typefully", luz: "Typefully", faz: "Posts do LinkedIn com imagem, sem gastar a cota do Metricool.", custo: "grátis" },
+  { nome: "Google Drive", luz: "Drive", faz: "Roteiros, vídeos gravados, modelos de capa, relatórios e registro de decisões.", custo: "grátis" },
+  { nome: "Claude (tarefas e pedidos)", luz: "Claude", faz: "Roteiros, capas, recortes, agendamento, relatórios e os pedidos que você faz aqui.", custo: "sua assinatura" },
+  { nome: "Instagram direto", luz: "Instagram", faz: "Publicação pela API oficial da Meta, sem cota. Reels, Stories, posts e carrosséis. Precisa do app da Meta e de dois segredos no GitHub (guia em central/COMO-LIGAR-O-INSTAGRAM.md).", custo: "grátis" },
+  { nome: "WhatsApp", luz: null, faz: "Mensagens prontas para o grupo de parceiros, enviadas em um toque. Envio automático para grupos não existe na API oficial.", custo: "grátis", estado: "ok" },
+  { nome: "Capas e recortes", luz: null, faz: "Capas com as suas fotos e a sua marca; recortes de 60 a 90 s em 30 fps, com legenda animada quando o vídeo não tiver.", custo: "grátis", estado: "ok" },
+  { nome: "Próximas", luz: null, faz: "Threads e Facebook (mesmos vídeos, quase sem esforço), YouTube e TikTok diretos (auditoria gratuita das plataformas), Pinterest e Kwai com os recortes, Canva para peças maiores.", custo: "a ligar", estado: "aviso" }];
+function desenharConexoes() {
+  const el = $("#conexoes"); el.innerHTML = "";
+  CONEXOES.forEach(c => { const s = c.estado || (c.luz ? ($(`.luz[data-c="${c.luz}"]`)?.dataset.s || "") : "");
+    const d = document.createElement("div"); d.className = "cartao";
+    d.innerHTML = `<div class="topo-c"><h3>${esc(c.nome)}</h3><span class="chip" data-s="${s === "ok" ? "ok" : s === "erro" ? "erro" : "agendado"}">${s === "ok" ? "ligado" : s === "erro" ? "com problema" : c.nome === "Próximas" ? "a ligar" : "verificando"}</span></div><p>${esc(c.faz)}</p><span class="rotulo">${esc(c.custo)}</span>`;
+    el.append(d); });
+}
+async function carregarRotinas() {
+  if (estado.carregado.rot) return; estado.carregado.rot = true;
+  const el = $("#rotinas");
+  try {
+    const r = await chamar(S.CCR, "list_triggers", { limit: 100 });
+    const lista = (Array.isArray(r) ? r : r?.triggers || r?.data || []).filter(t => /Master Growth|Radar|Roteiros|Doutor Di|Relat|Central/i.test(t.name || ""));
+    luz("Claude", "ok"); el.innerHTML = lista.length ? "" : `<div class="vazio-estado">Nenhuma tarefa do sistema encontrada.</div>`;
+    lista.forEach(t => { const d = document.createElement("div"); d.className = "cartao"; const st = t.last_run?.status || "";
+      d.innerHTML = `<div class="topo-c"><h3>${esc(t.name)}</h3><span class="chip" data-s="${/SUCCEEDED/.test(st) ? "ok" : /FAIL/.test(st) ? "erro" : ""}">${/SUCCEEDED/.test(st) ? "última ok" : /FAIL/.test(st) ? "última falhou" : t.enabled ? "ativa" : "pausada"}</span></div>
+        <p>${t.next_run_at ? "Próxima: " + esc(fmt(new Date(t.next_run_at), { weekday: "short", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })) : "Roda quando chamada"}</p>
+        <div class="linha-btn"><button class="btn peq">Rodar agora</button><span class="sub"></span></div>`;
+      const [b, s] = [d.querySelector("button"), d.querySelector(".linha-btn .sub")];
+      b.onclick = () => { s.innerHTML = `Rodar fora do horário? <button class="btn peq prim">Sim</button>`; s.querySelector("button").onclick = async () => { s.textContent = "Disparando…"; try { await chamar(S.CCR, "fire_trigger", { trigger_id: t.id }); s.textContent = "Disparada."; } catch (e) { s.textContent = msgErro(e, S.CCR); } }; };
+      el.append(d); });
+  } catch (e) { luz("Claude", "erro"); el.innerHTML = `<div class="aviso erro">${esc(msgErro(e, S.CCR))}</div>`; estado.carregado.rot = false; }
+}
+
+/* ---------- Banco da Central (pedidos, sugestões, fila, WhatsApp, painel) ---------- */
+function ligarBanco() {
+  db.doc("config/geral").onSnapshot(s => { estado.config = s.exists ? s.data() : {}; luz("Instagram", estado.config.instagramDireto === "ligado" ? "ok" : "aviso"); }, () => {});
+  db.doc("painel/estado").onSnapshot(s => { estado.alertas = s.exists ? (s.data().alertas || []) : []; desenharHoje(); }, () => {});
+  db.collection("pedidos").orderBy("criadoEm", "desc").limit(40).onSnapshot(q => desenharPedidos(q.docs), () => {});
+  db.collection("sugestoes").orderBy("criadaEm", "desc").limit(80).onSnapshot(q => desenharSugestoes(q.docs), () => {});
+  db.collection("whatsapp").orderBy("criadoEm", "desc").limit(20).onSnapshot(q => desenharWhats(q.docs), () => {});
+  db.collection("fila").onSnapshot(q => {
+    estado.fila = q.docs.map(d => d.data()).filter(i => i.quando).map(i => ({ fonte: "central", id: i.id, quando: new Date(i.quando), rede: i.rede || "instagram", status: i.status, tipo: i.tipo, texto: i.legenda || "", titulo: (i.legenda || "").split("\n")[0], link: i.resultado?.link, capa: i.capa, midia: (i.midias || [])[0] }));
+    desenharTudo();
+  }, () => {});
+}
+
+function desenharTudo() { desenharHoje(); if (!$("#p-calendario").hidden) desenharCalendario(); }
+async function recarregar(forcar) { await carregarMetricool(forcar); desenharTudo(); }
+$("#atualizar").onclick = async () => { const b = $("#atualizar"); b.disabled = true; b.textContent = "Atualizando…"; await Promise.all([carregarMetricool(true), carregarTypefully()]); estado.carregado.rot = false; desenharTudo(); b.disabled = false; b.textContent = "Atualizar tudo"; };
+$("#n-erro").parentElement.onclick = () => $("#alertas-painel").scrollIntoView({ behavior: "smooth" });
+
+/* ---------- Partida ---------- */
+desenharHoje(); desenharConexoes();
+try { const a = localStorage.getItem("central-aba"); if (a && $("#t-" + a)) abrirAba(a); } catch {}
+(async () => {
+  [mcp, db, sample, usuario] = await Promise.all(["mcp", "db", "sample", "user"].map(n => window.claude?.use?.(n) ?? Promise.resolve(null)));
+  if (db) ligarBanco(); else { $("#pedidos").innerHTML = `<div class="vazio-estado">Abra a Central no claude.ai para ver e fazer pedidos.</div>`; }
+  if (!mcp) { ["Metricool", "Typefully", "Drive", "Claude"].forEach(n => luz(n, "erro")); estado.erroMetricool = "Abra a Central no claude.ai para ler o Metricool."; desenharHoje(); return; }
+  await Promise.all([carregarMetricool(), carregarTypefully()]);
+  desenharTudo();
+})();
+</script>
