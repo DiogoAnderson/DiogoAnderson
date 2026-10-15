@@ -25,7 +25,8 @@ RAIZ = Path(__file__).resolve().parent.parent
 MODELOS = RAIZ / "marca" / "modelos"
 TAMANHOS = {"capa": (1080, 1920, "capa-reel.html"), "lamina": (1080, 1350, "lamina-carrossel.html"),
             "mentor": (1280, 720, "thumb-mentor-sincerao.html"),
-            "doutordi": (1080, 1920, "capa-doutor-di.html")}
+            "doutordi": (1080, 1920, "capa-doutor-di.html"),
+            "linkedin": (1080, 1350, "card-linkedin.html")}
 
 
 def achar_chromium() -> str | None:

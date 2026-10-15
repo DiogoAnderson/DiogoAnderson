@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Card LinkedIn — Angioletti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,600;0,700;1,500&family=Montserrat:wght@500;700&display=block" rel="stylesheet">
+<style>
+  /* Imagem do post de LinkedIn (1080×1350): foto real do Diogo, editoria, título e pergunta ao leitor. */
+  :root { --fundo: #061C34; --sup: #0A1F3A; --ouro: #D9A04A; --ouro2: #F2CF8A; --creme: #F5E9D3; }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1350px; overflow: hidden; background: var(--fundo); }
+  .card { position: relative; width: 1080px; height: 1350px; overflow: hidden; background: var(--fundo); }
+  .foto { position: absolute; right: 0; bottom: 0; width: 1080px; height: 860px;
+    background-size: cover; background-position: var(--foco, center 20%);
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 38%); mask-image: linear-gradient(180deg, transparent 0%, #000 38%); }
+  .veu { position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(6,28,52,0) 55%, rgba(6,28,52,.88) 82%, var(--fundo) 100%); }
+  .topo { position: absolute; left: 80px; right: 80px; top: 80px; }
+  .selo { display: inline-block; padding: 12px 22px; border: 2px solid var(--ouro); color: var(--ouro2);
+    font: 700 24px/1 Montserrat, sans-serif; letter-spacing: .18em; text-transform: uppercase; }
+  .titulo { margin-top: 36px; font: 700 76px/1.06 "EB Garamond", serif; color: var(--creme); }
+  .titulo em { font-style: normal; color: var(--ouro2); }
+  .pergunta { position: absolute; left: 80px; right: 80px; bottom: 150px; padding-left: 28px; border-left: 6px solid var(--ouro);
+    font: italic 500 46px/1.18 "EB Garamond", serif; color: var(--creme); text-shadow: 0 2px 12px rgba(0,0,0,.6); }
+  .rodape { position: absolute; left: 80px; right: 80px; bottom: 60px; display: flex; align-items: center; gap: 22px;
+    font: 500 22px/1.2 Montserrat, sans-serif; color: var(--creme); letter-spacing: .06em; }
+  .rodape img { width: 58px; height: 58px; border-radius: 50%; }
+  .rodape b { font-weight: 700; color: var(--ouro2); letter-spacing: .12em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="foto" id="foto"></div>
+  <div class="veu"></div>
+  <div class="topo">
+    <div class="selo" id="selo"></div>
+    <div class="titulo" id="titulo"></div>
+  </div>
+  <div class="pergunta" id="pergunta"></div>
+  <div class="rodape"><img src="../logo-quadrado-fundo-marinho.png" alt=""><div><b>Diogo Angioletti</b><br>Pessoas, Propósito &amp; Prosperidade</div></div>
+</div>
+<script>
+  // Campos: selo (editoria), titulo, destaque (trecho do título em dourado), texto (pergunta), foto, foco
+  const p = new URLSearchParams(location.search), $ = id => document.getElementById(id);
+  const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  $("selo").textContent = p.get("selo") || "";
+  if (!p.get("selo")) $("selo").style.display = "none";
+  const t = p.get("titulo") || "", d = p.get("destaque") || "";
+  let html = esc(t);
+  const i = d ? t.toLowerCase().indexOf(d.toLowerCase()) : -1;
+  if (i >= 0) html = esc(t.slice(0, i)) + "<em>" + esc(t.slice(i, i + d.length)) + "</em>" + esc(t.slice(i + d.length));
+  $("titulo").innerHTML = html;
+  $("pergunta").textContent = p.get("texto") || "";
+  if (!p.get("texto")) $("pergunta").style.display = "none";
+  $("foto").style.backgroundImage = `url("${p.get("foto") || "../fotos/diogo-camisa-azul.jpg"}")`;
+  if (p.get("foco")) $("foto").style.setProperty("--foco", p.get("foco"));
+</script>
+</body>
+</html>
