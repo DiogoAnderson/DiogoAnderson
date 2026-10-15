@@ -1,0 +1,66 @@
+# Central Angioletti — publica a fila própria (Instagram direto, sem cota do Metricool).
+# Roda a cada 15 minutos, de graça (repositório público). Os dados ficam no ramo da Central.
+name: Central — publicar fila
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      acao:
+        description: "publicar | ensaio | testar-instagram"
+        default: publicar
+
+permissions:
+  contents: write
+
+concurrency:
+  group: central-fila
+  cancel-in-progress: false
+
+env:
+  RAMO: ccr-efddba0a-tar1r3
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RAMO }}
+      - name: Há algo vencido?
+        id: fila
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import datetime as dt, json, pathlib
+          agora = dt.datetime.now(dt.timezone(dt.timedelta(hours=-3)))
+          n = sum(1 for p in pathlib.Path("central/fila").glob("*.json")
+                  if (i := json.loads(p.read_text())).get("status") == "agendado"
+                  and dt.datetime.fromisoformat(i["quando"]) <= agora)
+          print(f"vencidos={n}")
+          PY
+      - name: Preparar ferramentas
+        if: steps.fila.outputs.vencidos != '0' || github.event_name == 'workflow_dispatch'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
+          pip install -q faster-whisper numpy
+      - name: Testar a conexão com o Instagram
+        if: github.event.inputs.acao == 'testar-instagram'
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+        run: python -m central.instagram
+      - name: Publicar o que venceu
+        if: steps.fila.outputs.vencidos != '0' && github.event.inputs.acao != 'testar-instagram'
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+        run: python -m central.fila publicar ${{ github.event.inputs.acao == 'ensaio' && '--ensaio' || '' }}
+      - name: Guardar o resultado na fila
+        if: always() && steps.fila.outputs.vencidos != '0'
+        run: |
+          git config user.name "Central Angioletti"
+          git config user.email "central@users.noreply.github.com"
+          git add central/fila
+          git diff --cached --quiet || (git commit -m "Central: resultado da publicação" && git push origin HEAD:${RAMO})
