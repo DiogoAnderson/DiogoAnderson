@@ -69,7 +69,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("tipo", choices=TAMANHOS)
     for campo in ("foto", "fundo", "foco", "selo", "gancho", "destaque", "apoio", "num", "titulo", "texto", "parte",
-                  "ep", "chamada", "doenca1", "doenca2", "apoio1", "apoio2", "balao"):
+                  "ep", "chamada", "doenca1", "doenca2", "apoio1", "apoio2", "balao", "topo1", "topo2"):
         ap.add_argument(f"--{campo}")
     ap.add_argument("--saida", required=True)
     args = vars(ap.parse_args())

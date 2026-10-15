@@ -23,7 +23,7 @@
   /* Faixa de pincel: retângulo com bordas irregulares */
   .pincel { clip-path: polygon(2% 12%, 9% 4%, 22% 9%, 38% 2%, 55% 8%, 71% 1%, 86% 7%, 99% 3%, 97% 30%, 100% 55%, 96% 78%, 99% 96%, 84% 92%, 66% 99%, 49% 93%, 31% 99%, 15% 93%, 1% 98%, 3% 70%, 0% 45%); }
   .mao { font-family: Kalam, cursive; font-weight: 700; }
-  .hoje { position: absolute; left: 585px; top: 70px; font-size: 92px; color: var(--branco); transform: rotate(-4deg); }
+  .hoje { position: absolute; left: 585px; top: 70px; font-size: 92px; white-space: nowrap; color: var(--branco); transform: rotate(-4deg); }
   .novo { position: absolute; left: 505px; top: 185px; width: 530px; padding: 26px 0 30px; background: var(--amarelo);
     font: 400 74px/1 Anton, sans-serif; color: var(--marinho); text-align: center; text-transform: uppercase; transform: rotate(-4deg); }
   .seta { position: absolute; left: 470px; top: 190px; font: 700 90px/1 Kalam, cursive; color: var(--amarelo); transform: rotate(20deg); }
@@ -37,6 +37,7 @@
   .doenca { margin: 22px -40px 0; padding: 30px 20px 34px; background: var(--marinho);
     font: 400 112px/.95 Anton, sans-serif; text-transform: uppercase; color: var(--branco); }
   .doenca span { display: block; color: var(--amarelo); white-space: nowrap; }
+  .doenca span + span { margin-top: 10px; }
   .apoio { margin: 26px -12px 0; }
   .apoio b { display: block; padding: 10px; font: 900 40px/1 Montserrat, sans-serif; color: var(--marinho); text-transform: uppercase; }
   .apoio i { display: block; padding: 18px 10px 20px; background: var(--amarelo); font: 400 64px/1 Anton, sans-serif; font-style: normal;
@@ -63,8 +64,8 @@
 <div class="capa">
   <div class="foto" id="foto"></div>
   <div class="logo"></div>
-  <div class="hoje mao">Hoje tem</div>
-  <div class="novo pincel">Episódio novo</div>
+  <div class="hoje mao" id="topo1">Hoje tem</div>
+  <div class="novo pincel" id="topo2">Episódio novo</div>
   <div class="cartao">
     <div class="ep pincel" id="ep">Ep. 13</div>
     <div class="chamada" id="chamada"></div>
@@ -87,13 +88,16 @@
   $("a1").textContent = p.get("apoio1") || ""; $("a2").textContent = p.get("apoio2") || "";
   if (!p.get("apoio1") && !p.get("apoio2")) $("apoio").style.display = "none";
   if (!p.get("apoio2")) $("a2").style.display = "none";
+  // Card de divulgação de episódio antigo: --topo1 "Já viu esse?" --topo2 "Da série"
+  if (p.get("topo1")) $("topo1").textContent = p.get("topo1");
+  if (p.get("topo2")) $("topo2").textContent = p.get("topo2");
   $("balao").textContent = p.get("balao") || "";
   if (!p.get("balao")) $("balao").style.display = "none";
   $("foto").style.backgroundImage = `url("${p.get("foto") || "../fotos/doutor-di-jaleco.jpg"}")`;
   if (p.get("foco")) $("foto").style.backgroundPosition = p.get("foco");
   // Ajuste automático: cada linha da doença cabe numa linha só; o balão fica logo abaixo do cartão
   document.fonts.ready.then(() => {
-    for (const id of ["d1", "d2", "a2"]) {
+    for (const id of ["chamada", "d1", "d2", "a2"]) {
       const el = $(id); if (!el.textContent) continue;
       const pai = el.parentElement, cs = getComputedStyle(pai);
       const caixa = pai.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 50;
