@@ -47,16 +47,13 @@
     font-size: 50px; line-height: 1.12; color: var(--branco); text-align: center; transform: rotate(-3deg);
     box-shadow: 0 16px 30px rgba(0,0,0,.4); }
   .balao::after { content: ""; position: absolute; left: 40px; bottom: -30px; border: 22px solid transparent; border-top: 36px solid var(--marinho2); transform: rotate(20deg); }
-  .assista { position: absolute; left: 60px; top: 1450px; width: 900px; padding: 34px 0 38px 250px; background: var(--amarelo);
-    font: 400 104px/1 Anton, sans-serif; color: var(--marinho); text-transform: uppercase; transform: rotate(-3deg); }
+  .assista { position: absolute; left: 60px; top: 1450px; width: 900px; padding: 34px 0 38px; text-align: center; background: var(--amarelo);
+    font: 400 96px/1 Anton, sans-serif; color: var(--marinho); text-transform: uppercase; transform: rotate(-3deg); }
   .yt { position: absolute; left: 95px; top: 1480px; width: 150px; height: 106px; border-radius: 30px; background: #E62117; transform: rotate(-3deg);
     box-shadow: 0 8px 18px rgba(0,0,0,.3); }
   .yt::after { content: ""; position: absolute; left: 58px; top: 30px; border-left: 46px solid #fff; border-top: 24px solid transparent; border-bottom: 24px solid transparent; }
-  .link { position: absolute; left: 280px; top: 1630px; padding: 22px 48px; background: var(--branco); border-radius: 60px;
-    font: 900 58px/1 Montserrat, sans-serif; color: var(--marinho); box-shadow: 0 10px 24px rgba(0,0,0,.35); }
-  .acoes { position: absolute; left: 50px; top: 1760px; display: flex; gap: 46px; font: 800 30px/1 Montserrat, sans-serif; color: var(--branco); }
-  .acoes span { text-align: center; text-transform: uppercase; }
-  .acoes span::before { content: attr(data-i); display: block; font-size: 64px; margin-bottom: 10px; }
+  .link { position: absolute; left: 60px; top: 1620px; width: 900px; text-align: center; font-size: 54px; white-space: nowrap; color: var(--branco); transform: rotate(-3deg); }
+  .acoes { position: absolute; left: 60px; top: 1800px; font: 800 30px/1 Montserrat, sans-serif; color: var(--branco); text-transform: uppercase; letter-spacing: .06em; }
   .familia { position: absolute; left: 755px; top: 1745px; width: 310px; font-size: 48px; line-height: 1.05; color: var(--amarelo); transform: rotate(-6deg); text-align: center; }
 </style>
 </head>
@@ -73,10 +70,10 @@
     <div class="apoio" id="apoio"><b id="a1"></b><i class="pincel" id="a2"></i></div>
   </div>
   <div class="balao mao" id="balao"></div>
-  <div class="assista pincel">Assista agora!</div>
-  <div class="yt"></div>
-  <div class="link">🔗 LINK NA BIO</div>
-  <div class="acoes"><span data-i="▶️">Curta</span><span data-i="💬">Comente</span><span data-i="↗️">Compartilhe</span></div>
+  <!-- Regra de capas sem design enganoso (15/10/2026): sem ícone de play, sem botões, sem setas. -->
+  <div class="assista pincel">Assista no YouTube</div>
+  <div class="link mao">série completa no link da bio</div>
+  <div class="acoes">Curta · Comente · Compartilhe</div>
   <div class="familia mao">Chama a família e vem rir!</div>
 </div>
 <script>
